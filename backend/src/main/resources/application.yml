@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: group-matcher
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/group_matcher?serverTimezone=UTC}
+    username: ${DB_USERNAME:group_matcher}
+    password: ${DB_PASSWORD:group_matcher}
+
+  jpa:
+    # Schema is owned by Flyway; Hibernate only checks that entities match it.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+        type.preferred_instant_jdbc_type: TIMESTAMP
+        default_batch_fetch_size: 50
+
+  flyway:
+    # db/seed holds demo users for local development. Drop it from this list
+    # (e.g. in an application-prod.yml) for any real deployment.
+    locations: classpath:db/migration,classpath:db/seed
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
