@@ -66,7 +66,7 @@ The teacher creates a **project** with a group size and the **weight of each com
 1. **Weighted score** for each student: `S = Σ weight(c) × Score(c)`.
 2. **Snake distribution:** students sorted by S are dealt 1-2-3, 3-2-1, 1-2-3… so strong and weaker students are spread evenly.
 3. **Coverage:** every group should have someone strong (≥ 60) in each important competency (weight ≥ 25%); otherwise students with similar S are swapped between groups.
-4. **Constraints and roles:** swaps also respect "must not be together" rules and avoid groups without a leader.
+4. **Constraints, availability and roles:** swaps also respect "must not be together" rules, keep students with compatible availability together and avoid groups without a leader.
 5. **Teacher review:** the teacher sees the proposal, adjusts it and publishes it.
 
 The group size is a **maximum** and sizes differ by at most one (10 students, size 3 → 3/3/2/2).
@@ -75,7 +75,9 @@ The group size is a **maximum** and sizes differ by at most one (10 students, si
 
 - **AI weight recommendation** — the teacher describes the activity and gets suggested competency weights (always confirmed by the teacher; no personal data is sent).
 - **Match explanation** — "Why this group?": each student sees what they bring to the group.
-- *(optional)* **Peer evaluation** — after a project, students rate their colleagues, which feeds the profile.
+- **Availability** — students indicate the time slots when they are available (especially working students), so groups are formed with compatible schedules.
+- **Peer evaluation** — at the end of each project, students anonymously rate each colleague's participation, communication and contribution; the result feeds the profile.
+- **Visual competency profile** — a dashboard with a radar chart of the six competencies and their evolution throughout the degree.
 
 Full details: [use cases](docs/use-cases.md) · [cold start and matching](docs/cold-start-and-matching.md).
 
