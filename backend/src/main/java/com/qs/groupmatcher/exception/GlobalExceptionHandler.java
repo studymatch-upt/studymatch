@@ -1,5 +1,6 @@
 package com.qs.groupmatcher.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -39,5 +40,15 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setTitle(title);
         return problem;
+    }
+        @ExceptionHandler(DuplicateResourceException.class)
+    public ProblemDetail handleDuplicate(DuplicateResourceException ex) {
+        return problem(HttpStatus.CONFLICT, "Already exists", ex.getMessage());
+    }
+
+    /** Safety net: two requests racing past the existence checks hit the database unique constraint. */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleIntegrityViolation(DataIntegrityViolationException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflict", "The data conflicts with an existing record");
     }
 }

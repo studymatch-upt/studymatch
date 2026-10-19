@@ -10,7 +10,7 @@ spring:
   jpa:
     # Schema is owned by Flyway; Hibernate only checks that entities match it.
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
     properties:
       hibernate:
