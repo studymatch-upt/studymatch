@@ -5,20 +5,22 @@ import { AppButton } from '@/components/AppButton';
 import { AppText } from '@/components/AppText';
 import { BrandMark } from '@/components/BrandMark';
 import { EntryHeader } from '@/components/EntryHeader';
+import { roleNames } from '@/components/RoleSelector';
 import { Screen } from '@/components/Screen';
 import { useTheme } from '@/theme/ThemeProvider';
 import { borderWidth, radius, spacing } from '@/theme/tokens';
 
 export default function DemoScreen() {
   const router = useRouter();
-  const { role } = useLocalSearchParams<{ role?: string }>();
+  const { role, source } = useLocalSearchParams<{ role?: string; source?: string }>();
   const { colors } = useTheme();
-  const profile = role === 'professor' ? 'Professor' : role === 'aluno' ? 'Aluno' : null;
+  const profile = role === 'aluno' || role === 'professor' || role === 'administrador'
+    ? roleNames[role] : null;
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
-        <EntryHeader back backTo="/choose-profile" label="STUDYMATCH" />
+        <EntryHeader back backTo="/login" label="STUDYMATCH" />
         <View style={styles.main}>
           <View style={[styles.mark, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <BrandMark size={72} />
@@ -29,9 +31,11 @@ export default function DemoScreen() {
               {profile ? `Perfil de ${profile}` : 'Escolhe um perfil'}
             </AppText>
             <AppText tone="secondary" style={styles.center}>
-              {profile
-                ? 'A experiência completa deste perfil será implementada num próximo Issue.'
-                : 'Volta ao ecrã anterior para escolheres uma experiência.'}
+              {source === 'register'
+                ? 'O formulário terminou, mas nenhuma conta foi criada. O registo real será implementado mais tarde.'
+                : profile
+                  ? 'A experiência completa deste perfil será implementada num próximo Issue.'
+                  : 'Volta ao login para escolheres uma experiência.'}
             </AppText>
           </View>
         </View>

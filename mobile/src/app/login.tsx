@@ -15,11 +15,11 @@ import { AppInput } from '@/components/AppInput';
 import { AppText } from '@/components/AppText';
 import { BrandMark } from '@/components/BrandMark';
 import { EntryHeader } from '@/components/EntryHeader';
+import { RoleSelector, type DemoRole } from '@/components/RoleSelector';
 import { Screen } from '@/components/Screen';
+import { emailError as getEmailError } from '@/features/entry/validation';
 import { useTheme } from '@/theme/ThemeProvider';
 import { dimensions, opacity, spacing } from '@/theme/tokens';
-
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -28,6 +28,7 @@ export default function LoginScreen() {
   const navigating = useRef(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<DemoRole | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -37,19 +38,18 @@ export default function LoginScreen() {
     setSubmitting(false);
   }, []));
 
-  const emailError = !email.trim()
-    ? 'Introduz o teu email.'
-    : !emailPattern.test(email.trim()) ? 'Introduz um email válido.' : undefined;
+  const emailError = getEmailError(email);
   const passwordError = password ? undefined : 'Introduz a tua palavra-passe.';
+  const roleError = role ? undefined : 'Escolhe o teu perfil.';
 
   function submit() {
     if (navigating.current) return;
     setAttempted(true);
-    if (emailError || passwordError) return;
+    if (emailError || passwordError || roleError) return;
     navigating.current = true;
     setSubmitting(true);
     setPassword('');
-    router.push('/choose-profile');
+    router.push({ pathname: '/demo', params: { role } });
   }
 
   return (
@@ -110,7 +110,17 @@ export default function LoginScreen() {
                   </Pressable>
                 }
               />
+              <RoleSelector value={role} onChange={setRole} error={attempted ? roleError : undefined} />
               <AppButton title="Entrar" disabled={submitting} onPress={submit} />
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Criar conta"
+                onPress={() => router.push('/register')}
+                style={({ pressed }) => [styles.register, pressed && styles.pressed]}
+              >
+                <AppText variant="caption" tone="secondary">Ainda não tens conta? </AppText>
+                <AppText variant="label" tone="accent">Criar conta</AppText>
+              </Pressable>
             </View>
           </View>
           <View style={styles.note}>
@@ -132,6 +142,7 @@ const styles = StyleSheet.create({
   brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   intro: { gap: spacing.xs },
   form: { gap: spacing.lg },
+  register: { minHeight: dimensions.controlSm, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   showPassword: { minHeight: dimensions.controlSm, justifyContent: 'center', paddingHorizontal: spacing.xs },
   pressed: { opacity: opacity.pressed },
   note: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xs },
