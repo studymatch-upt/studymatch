@@ -15,6 +15,7 @@ export default function RegisterScreen() {
   const router = useRouter();
   const navigating = useRef(false);
   const [name, setName] = useState('');
+  const [studentNumber, setStudentNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -28,6 +29,13 @@ export default function RegisterScreen() {
   }, []));
 
   const nameError = name.trim() ? undefined : 'Introduz o teu nome.';
+  const studentNumberError = role !== 'aluno'
+    ? undefined
+    : !studentNumber.trim()
+      ? 'Introduz o teu número de aluno.'
+      : !/^\d+$/.test(studentNumber.trim())
+        ? 'O número de aluno deve conter apenas algarismos.'
+        : undefined;
   const emailError = getEmailError(email);
   const passwordError = password.length >= 8 ? undefined : 'Usa pelo menos 8 caracteres.';
   const confirmationError = confirmation === password && confirmation
@@ -37,7 +45,7 @@ export default function RegisterScreen() {
   function submit() {
     if (navigating.current) return;
     setAttempted(true);
-    if (nameError || emailError || passwordError || confirmationError || roleError) return;
+    if (nameError || studentNumberError || emailError || passwordError || confirmationError || roleError) return;
     navigating.current = true;
     setSubmitting(true);
     setPassword('');
@@ -105,6 +113,19 @@ export default function RegisterScreen() {
               onSubmitEditing={submit}
             />
             <RoleSelector value={role} onChange={setRole} error={attempted ? roleError : undefined} />
+            {role === 'aluno' && (
+              <AppInput
+                label="Número de aluno"
+                placeholder="Introduz o teu número de aluno"
+                value={studentNumber}
+                onChangeText={setStudentNumber}
+                error={attempted ? studentNumberError : undefined}
+                keyboardType="number-pad"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="off"
+              />
+            )}
             <AppButton title="Criar conta" disabled={submitting} onPress={submit} />
           </View>
           <AppText variant="caption" tone="secondary" style={styles.note}>
