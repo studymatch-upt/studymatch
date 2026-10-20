@@ -1,120 +1,62 @@
-import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 
-import { AppBadge } from '@/components/AppBadge';
 import { AppButton } from '@/components/AppButton';
-import { AppCard } from '@/components/AppCard';
-import { AppInput } from '@/components/AppInput';
 import { AppText } from '@/components/AppText';
-import { EmptyState } from '@/components/EmptyState';
-import { LoadingState } from '@/components/LoadingState';
-import { ProgressBar } from '@/components/ProgressBar';
+import { BrandMark } from '@/components/BrandMark';
+import { EntryHeader } from '@/components/EntryHeader';
 import { Screen } from '@/components/Screen';
-import { SegmentedControl } from '@/components/SegmentedControl';
-import { useTheme, type ThemePreference } from '@/theme/ThemeProvider';
-import { dimensions, radius, spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import { borderWidth, radius, spacing } from '@/theme/tokens';
 
-const themeOptions = [
-  { label: 'Sistema', value: 'system' },
-  { label: 'Claro', value: 'light' },
-  { label: 'Escuro', value: 'dark' },
-] as const;
-
-export default function HomeScreen() {
-  const { colors, preference, setPreference, resolvedTheme } = useTheme();
-  const [projectName, setProjectName] = useState('');
-  const [feedback, setFeedback] = useState('');
+export default function WelcomeScreen() {
+  const router = useRouter();
+  const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const artSize = Math.min(width - spacing.xl * 2, 320);
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <View style={[styles.mark, { backgroundColor: colors.primary }]}>
-            <AppText variant="heading" tone="inverse">S</AppText>
+      <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
+        <EntryHeader label="STUDYMATCH" />
+        <View style={styles.hero}>
+          <View style={[styles.art, { width: artSize, height: artSize }]}>
+            <View style={[styles.outerRing, { width: artSize, height: artSize, borderColor: colors.border }]} />
+            <View style={[styles.middleRing, { width: artSize * 0.72, height: artSize * 0.72, borderColor: colors.border }]} />
+            <View style={[styles.innerCircle, { width: artSize * 0.42, height: artSize * 0.42, backgroundColor: colors.surface, borderColor: colors.border }]} />
+            <View style={[styles.node, styles.nodeTop, { backgroundColor: colors.primary }]} />
+            <View style={[styles.node, styles.nodeLeft, { backgroundColor: colors.primaryBright }]} />
+            <View style={[styles.node, styles.nodeRight, { backgroundColor: colors.primaryBright }]} />
+            <BrandMark size={artSize * 0.25} />
           </View>
-          <AppBadge label="SISTEMA VISUAL" status="info" />
-        </View>
-
-        <View style={styles.intro}>
-          <AppText variant="title" accessibilityRole="header">StudyMatch</AppText>
-          <AppText tone="secondary">Uma base visual simples para os próximos ecrãs.</AppText>
-        </View>
-
-        <View style={styles.section}>
-          <AppText variant="label">Aparência</AppText>
-          <SegmentedControl<ThemePreference>
-            label="Tema da aplicação"
-            options={themeOptions}
-            value={preference}
-            onChange={setPreference}
-          />
-          <AppText variant="caption" tone="secondary">
-            Tema ativo: {resolvedTheme === 'dark' ? 'escuro' : 'claro'}
-          </AppText>
-        </View>
-
-        <AppCard style={styles.featureCard}>
-          <AppBadge label="BASE MÓVEL" status="success" />
-          <AppText variant="heading">Feito para estudar em conjunto.</AppText>
-          <AppText tone="secondary">
-            A mesma linguagem visual acompanha alunos e professores em toda a aplicação.
-          </AppText>
-        </AppCard>
-
-        <View style={styles.section}>
-          <AppText variant="heading">Componentes</AppText>
-          <AppText variant="caption" tone="secondary">Ações, campos e estados de exemplo.</AppText>
-        </View>
-
-        <AppCard style={styles.stack}>
-          <AppText variant="label">Ações</AppText>
-          <AppButton title="Continuar" onPress={() => setFeedback('Selecionaste Continuar.')} />
-          <View style={styles.buttonRow}>
-            <AppButton title="Mais tarde" variant="secondary" style={styles.flex} onPress={() => setFeedback('Selecionaste Mais tarde.')} />
-            <AppButton title="Detalhes" variant="outline" style={styles.flex} onPress={() => setFeedback('Selecionaste Detalhes.')} />
+          <View style={styles.copy}>
+            <AppText variant="title" accessibilityRole="header" style={styles.name}>StudyMatch</AppText>
+            <AppText variant="body" tone="secondary" style={styles.tagline}>Encontra a tua equipa ideal.</AppText>
           </View>
-          <AppButton title="Indisponível" disabled />
-          {!!feedback && <AppText variant="caption" tone="secondary" accessibilityLiveRegion="polite">{feedback}</AppText>}
-        </AppCard>
-
-        <AppCard style={styles.stack}>
-          <AppInput
-            label="Nome do projeto"
-            placeholder="Escreve um nome"
-            hint="Campo de exemplo"
-            value={projectName}
-            onChangeText={setProjectName}
-          />
-          <ProgressBar label="Exemplo de progresso" value={42} />
-          <View style={styles.badges}>
-            <AppBadge label="Concluído" status="success" />
-            <AppBadge label="Pendente" status="warning" />
-            <AppBadge label="Informação" status="info" />
-            <AppBadge label="Erro" status="error" />
-          </View>
-        </AppCard>
-
-        <AppCard>
-          <EmptyState title="Ainda sem conteúdo" description="Este é o aspeto de um estado vazio." />
-        </AppCard>
-
-        <AppCard>
-          <LoadingState message="A preparar conteúdo..." />
-        </AppCard>
+        </View>
+        <View style={styles.footer}>
+          <AppButton title="Começar" onPress={() => router.push('/login')} />
+          <AppText variant="caption" tone="secondary" style={styles.footnote}>Projetos melhores começam em conjunto.</AppText>
+        </View>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingTop: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  mark: { width: dimensions.symbol, height: dimensions.symbol, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
-  intro: { gap: spacing.xxs },
-  section: { gap: spacing.sm },
-  featureCard: { gap: spacing.md, paddingVertical: spacing.xl },
-  stack: { gap: spacing.md },
-  buttonRow: { flexDirection: 'row', gap: spacing.xs },
-  flex: { flex: 1 },
-  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  page: { flexGrow: 1, justifyContent: 'space-between', paddingTop: spacing.sm, paddingBottom: spacing.xl },
+  hero: { alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.xl },
+  art: { alignItems: 'center', justifyContent: 'center' },
+  outerRing: { position: 'absolute', borderWidth: borderWidth.thin, borderRadius: radius.pill },
+  middleRing: { position: 'absolute', borderWidth: borderWidth.thin, borderRadius: radius.pill },
+  innerCircle: { position: 'absolute', borderWidth: borderWidth.thin, borderRadius: radius.pill },
+  node: { position: 'absolute', width: spacing.sm, height: spacing.sm, borderRadius: radius.pill },
+  nodeTop: { top: spacing.lg },
+  nodeLeft: { left: spacing.lg, bottom: spacing.xxl * 2 },
+  nodeRight: { right: spacing.lg, bottom: spacing.xxl * 2 },
+  copy: { alignItems: 'center', gap: spacing.xs },
+  name: { textAlign: 'center' },
+  tagline: { textAlign: 'center' },
+  footer: { gap: spacing.md },
+  footnote: { textAlign: 'center' },
 });

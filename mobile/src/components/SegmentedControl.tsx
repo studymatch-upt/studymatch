@@ -10,7 +10,7 @@ export type SegmentOption<T extends string> = { label: string; value: T };
 type Props<T extends string> = {
   label: string;
   options: readonly SegmentOption<T>[];
-  value: T;
+  value: T | null;
   onChange: (value: T) => void;
   disabled?: boolean;
 };
