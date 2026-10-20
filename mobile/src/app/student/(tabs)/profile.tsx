@@ -51,7 +51,7 @@ export default function Profile() {
         <SegmentedControl<ThemePreference> label="Tema da aplicação" options={themes} value={preference} onChange={setPreference} />
         <AppText variant="caption" tone="secondary">A preferência de tema é guardada neste dispositivo.</AppText>
       </AppCard>
-      <AppButton title="Terminar sessão demonstrativa" variant="outline" onPress={() => setStudentActive(false)} />
+      <AppButton title={official ? 'Voltar aos alunos de teste' : 'Terminar sessão demonstrativa'} variant="outline" onPress={() => setStudentActive(false)} />
     </StudentPage>
   );
 }
