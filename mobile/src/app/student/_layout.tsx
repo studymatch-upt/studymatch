@@ -4,11 +4,11 @@ import { useDemoSession } from '@/features/student/DemoSession';
 
 export default function StudentLayout() {
   const { colors } = useTheme();
-  const { record } = useDemoSession();
+  const { record, official } = useDemoSession();
   return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
     <Stack.Screen name="questionnaire" />
     <Stack.Screen name="questionnaire-complete" />
-    <Stack.Protected guard={record.completed} redirectTo="/student/questionnaire">
+    <Stack.Protected guard={record.completed || official !== null} redirectTo="/student/questionnaire">
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="competencies" />
       <Stack.Screen name="project/[id]" />

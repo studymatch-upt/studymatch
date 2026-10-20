@@ -11,20 +11,23 @@ import {
 } from 'react-native';
 
 import { AppButton } from '@/components/AppButton';
+import { AppCard } from '@/components/AppCard';
 import { AppInput } from '@/components/AppInput';
 import { AppText } from '@/components/AppText';
+import { LoadingState } from '@/components/LoadingState';
 import { BrandMark } from '@/components/BrandMark';
 import { EntryHeader } from '@/components/EntryHeader';
 import { RoleSelector, type DemoRole } from '@/components/RoleSelector';
 import { Screen } from '@/components/Screen';
 import { emailError as getEmailError } from '@/features/entry/validation';
 import { useDemoSession } from '@/features/student/DemoSession';
+import { getDemoStudents, type ApiStudent } from '@/features/student/studentApi';
 import { useTheme } from '@/theme/ThemeProvider';
 import { dimensions, opacity, spacing } from '@/theme/tokens';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { startStudentSession } = useDemoSession();
+  const { startStudentSession, startOfficialStudentSession } = useDemoSession();
   const { colors } = useTheme();
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
   const navigating = useRef(false);
@@ -34,11 +37,30 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [demoStudents, setDemoStudents] = useState<ApiStudent[]>([]);
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoError, setDemoError] = useState<string | null>(null);
+  const [selectedDemoId, setSelectedDemoId] = useState<number | null>(null);
+
+  const loadDemoStudents = useCallback(async () => {
+    if (!__DEV__) return;
+    setDemoLoading(true);
+    setDemoError(null);
+    try {
+      setDemoStudents(await getDemoStudents());
+    } catch (error) {
+      setDemoStudents([]);
+      setDemoError(error instanceof Error ? error.message : 'Não foi possível obter os alunos de teste.');
+    } finally {
+      setDemoLoading(false);
+    }
+  }, []);
 
   useFocusEffect(useCallback(() => {
     navigating.current = false;
     setSubmitting(false);
-  }, []));
+    void loadDemoStudents();
+  }, [loadDemoStudents]));
 
   const emailError = getEmailError(email);
   const passwordError = password ? undefined : 'Introduz a tua palavra-passe.';
@@ -55,6 +77,18 @@ export default function LoginScreen() {
       await startStudentSession(email);
     } else {
       router.push({ pathname: '/demo', params: { role } });
+    }
+  }
+
+  async function selectDemoStudent(student: ApiStudent) {
+    if (navigating.current || selectedDemoId !== null) return;
+    setSelectedDemoId(student.id);
+    setDemoError(null);
+    try {
+      await startOfficialStudentSession(student);
+    } catch (error) {
+      setDemoError(error instanceof Error ? error.message : 'Não foi possível abrir o perfil.');
+      setSelectedDemoId(null);
     }
   }
 
@@ -128,6 +162,25 @@ export default function LoginScreen() {
                 <AppText variant="label" tone="accent">Criar conta</AppText>
               </Pressable>
             </View>
+            {__DEV__ && <AppCard style={styles.demoCard}>
+              <AppText variant="label">Alunos de teste · desenvolvimento</AppText>
+              <AppText variant="caption" tone="secondary">Dados reais do backend de demonstração. Sem autenticação.</AppText>
+              {demoLoading ? <LoadingState message="A procurar Carla e Diogo..." /> : demoError ? <>
+                <AppText variant="caption" tone="secondary" accessibilityRole="alert">{demoError}</AppText>
+                <AppButton title="Tentar novamente" variant="outline" size="sm" onPress={() => void loadDemoStudents()} />
+              </> : demoStudents.length === 0 ? <>
+                <AppText variant="caption" tone="secondary">Carla e Diogo não foram encontrados no backend configurado.</AppText>
+                <AppButton title="Atualizar alunos" variant="outline" size="sm" onPress={() => void loadDemoStudents()} />
+              </> : demoStudents.map((student) => <AppButton
+                key={student.id}
+                title={`${student.name} · ${student.studentNumber}`}
+                variant="secondary"
+                size="sm"
+                loading={selectedDemoId === student.id}
+                disabled={selectedDemoId !== null}
+                onPress={() => void selectDemoStudent(student)}
+              />)}
+            </AppCard>}
           </View>
           <View style={styles.note}>
             <View style={[styles.noteDot, { backgroundColor: colors.primary }]} />
@@ -154,4 +207,5 @@ const styles = StyleSheet.create({
   note: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xs },
   noteDot: { width: spacing.xs, height: spacing.xs, borderRadius: spacing.xs, marginTop: spacing.xs },
   noteText: { flex: 1 },
+  demoCard: { gap: spacing.xs },
 });

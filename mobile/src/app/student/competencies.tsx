@@ -8,6 +8,7 @@ import { LabeledCompetencyRadar, competencyAxes } from '@/features/student/Compe
 import { selectCompetencyProfile } from '@/features/student/competencyProfile';
 import { useDemoSession } from '@/features/student/DemoSession';
 import { demoStudent } from '@/features/student/data';
+import { OfficialDataStatus } from '@/features/student/OfficialDataStatus';
 import { competencies } from '@/features/student/questionnaire';
 import { StudentIcon } from '@/features/student/StudentIcon';
 import { StudentPage, studentStyles } from '@/features/student/StudentPage';
@@ -20,20 +21,21 @@ export default function Competencies() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { colors } = useTheme();
-  const { record, identity, goToStep } = useDemoSession();
-  const profile = selectCompetencyProfile(record);
+  const { record, identity, official, goToStep } = useDemoSession();
+  const profile = selectCompetencyProfile(record, official?.profile, official?.student.id);
   const scores = profile?.scores;
   const radarSize = Math.min(210, Math.max(144, width - 160));
-  const name = identity?.name || demoStudent.name;
-  const exampleName = !identity?.name;
+  const name = official?.student.name ?? identity?.name ?? demoStudent.name;
+  const exampleName = !official && !identity?.name;
 
   return <StudentPage detail compactHeader title="Competências">
+    <OfficialDataStatus />
     <AppCard style={styles.identityCard}>
       <View style={[styles.avatar, { backgroundColor: colors.surfaceRaised }]}><StudentIcon name="profile" color={colors.accentText} size={22} /></View>
       <View style={styles.identityCopy}>
         <AppText variant="label" numberOfLines={1}>{name}</AppText>
-        <AppText variant="caption" tone="secondary" numberOfLines={1}>Engenharia Informática · exemplo</AppText>
-        <AppText variant="caption" tone="accent">{exampleName ? 'IDENTIDADE DE EXEMPLO' : 'AUTOAVALIAÇÃO LOCAL'}</AppText>
+        <AppText variant="caption" tone="secondary" numberOfLines={1}>{official ? `N.º ${official.student.studentNumber} · ${official.student.curricularYear ? `${official.student.curricularYear}.º ano` : 'ano não indicado'}` : 'Engenharia Informática · exemplo'}</AppText>
+        <AppText variant="caption" tone="accent">{official ? 'PERFIL OFICIAL DO BACKEND' : exampleName ? 'IDENTIDADE DE EXEMPLO' : 'AUTOAVALIAÇÃO LOCAL'}</AppText>
       </View>
       <View style={styles.overall}>
         <AppText variant="heading" tone="accent">{profile?.overallScore == null ? '—' : Math.round(profile.overallScore)}</AppText>
@@ -47,6 +49,7 @@ export default function Competencies() {
         <AppText variant="caption" tone="accent">{profile?.source === 'official' ? 'Perfil académico' : 'Autoavaliação'}</AppText>
       </View>
       <LabeledCompetencyRadar size={radarSize} scores={scores} />
+      {official && Object.keys(scores ?? {}).length === 0 && <AppText variant="caption" tone="secondary">Ainda não há pontuações oficiais para este aluno.</AppText>}
     </AppCard>
 
     <AppCard style={styles.card}>
@@ -89,7 +92,10 @@ export default function Competencies() {
       </>}
     </AppCard>
 
-    <AppButton title="Rever ou refazer questionário" variant="outline" size="sm" onPress={() => { goToStep(0); router.push('/student/questionnaire'); }} />
+    {official ? <AppCard style={styles.card}>
+      <AppText variant="label">Questionário do backend</AppText>
+      <AppText variant="caption" tone="secondary">{Object.keys(official.questionnaire.answers).length} de 6 áreas com resposta oficial. A autoavaliação local permanece separada.</AppText>
+    </AppCard> : <AppButton title="Rever ou refazer questionário" variant="outline" size="sm" onPress={() => { goToStep(0); router.push('/student/questionnaire'); }} />}
     <AppButton title="Ir para o início" variant="secondary" size="sm" onPress={() => router.replace('/student')} />
   </StudentPage>;
 }
