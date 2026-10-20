@@ -3,7 +3,7 @@ import { aggregateAnswers, type AggregatedAnswers, type Answer } from './questio
 import { freshRecord, normalizeEmail, readQuestionnaire, writeQuestionnaire, type QuestionnaireRecord } from './questionnaireStorage';
 import { getOfficialStudentData, type ApiStudent, type OfficialStudentData } from './studentApi';
 
-type StudentIdentity = { email: string; name?: string; curricularYear?: 1 | 2 | 3 };
+type StudentIdentity = { email: string; name?: string; studentNumber?: string; curricularYear?: 1 | 2 | 3 };
 type Session = {
   studentActive: boolean;
   setStudentActive: (active: boolean) => void;

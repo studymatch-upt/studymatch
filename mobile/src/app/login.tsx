@@ -144,10 +144,10 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   page: { flexGrow: 1, justifyContent: 'space-between', paddingTop: spacing.sm, paddingBottom: spacing.xl },
-  main: { gap: spacing.xxl, paddingVertical: spacing.xl },
+  main: { gap: spacing.xl, paddingVertical: spacing.sm },
   brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   intro: { gap: spacing.xs },
-  form: { gap: spacing.lg },
+  form: { gap: spacing.md },
   register: { minHeight: dimensions.controlSm, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   showPassword: { minHeight: dimensions.controlSm, justifyContent: 'center', paddingHorizontal: spacing.xs },
   pressed: { opacity: opacity.pressed },

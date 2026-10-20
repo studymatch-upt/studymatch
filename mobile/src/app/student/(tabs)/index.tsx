@@ -39,7 +39,7 @@ export default function StudentHome() {
               <AppText variant="label">Overall · {profile?.overallScore == null ? '—' : Math.round(profile.overallScore)}</AppText>
               <AppText variant="caption" tone="secondary">Perfil de competências</AppText>
             </View>
-            <AppText variant="caption" tone="accent">Ver perfil ↗</AppText>
+            <AppText variant="caption" tone="accent">Ver competências ↗</AppText>
           </View>
           <View style={styles.radarRow}>
             <View style={[styles.radarBox, { backgroundColor: colors.surfaceRaised }]}>

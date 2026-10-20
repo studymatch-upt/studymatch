@@ -6,7 +6,7 @@ export type ApiStudent = {
   id: number;
   name: string;
   email: string;
-  studentNumber: string;
+  studentNumber: string | null;
   curricularYear: number | null;
 };
 
@@ -89,7 +89,7 @@ function number(value: unknown): number {
 
 function student(value: unknown): ApiStudent {
   const data = object(value);
-  if (typeof data.name !== 'string' || typeof data.email !== 'string' || typeof data.studentNumber !== 'string') {
+  if (typeof data.name !== 'string' || typeof data.email !== 'string' || (data.studentNumber !== null && typeof data.studentNumber !== 'string')) {
     throw new Error('Dados de aluno inválidos no backend.');
   }
   return {

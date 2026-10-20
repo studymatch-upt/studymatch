@@ -115,7 +115,7 @@ export default function GradesScreen() {
     }
   }
 
-  return <StudentPage detail compactHeader title="Notas" subtitle={official ? `Histórico académico · ${official.student.name}` : 'Média simples e histórico académico'}>
+  return <StudentPage detail compactHeader keyboardAware title="Notas" subtitle={official ? `Histórico académico · ${official.student.name}` : 'Média simples e histórico académico'}>
     {official ? <>
       <OfficialDataStatus />
       {notice && <AppText variant="caption" tone="accent" accessibilityRole="alert">{notice}</AppText>}
@@ -140,7 +140,7 @@ export default function GradesScreen() {
         <AppText variant="label">Nova nota · sessão de teste</AppText>
         <AppText variant="caption" tone="secondary">Escolhe uma cadeira do catálogo. Esta ação altera os dados do backend de demonstração.</AppText>
         {catalogLoading && <LoadingState message="A carregar catálogo..." />}
-        {catalogError && <AppText variant="caption" tone="secondary" accessibilityRole="alert">{catalogError}</AppText>}
+        {catalogError && <AppText variant="caption" style={{ color: colors.error.text }} accessibilityRole="alert">{catalogError}</AppText>}
         <AppInput label="Unidade curricular" placeholder="Pesquisar nome ou código" value={query} onChangeText={(text) => { setQuery(text); setSelectedUnit(null); }} autoCorrect={false} />
         {selectedUnit ? <AppText variant="caption" tone="accent">Selecionada: {selectedUnit.code} · {selectedUnit.name}</AppText> : query.trim() && catalogReady ? (
           matches.length ? <View style={styles.results}>{matches.map((unit) => <Pressable key={unit.id} accessibilityRole="button" accessibilityLabel={`Selecionar ${unit.name}`} onPress={() => chooseUnit(unit)} style={({ pressed }) => [styles.result, { borderColor: colors.border }, pressed && styles.pressed]}>
@@ -151,7 +151,7 @@ export default function GradesScreen() {
         <AppInput label="Nota (0 a 20)" placeholder="Ex.: 14,5" value={grade} onChangeText={setGrade} keyboardType="decimal-pad" />
         <AppInput label="Ano letivo — ano inicial" placeholder="Ex.: 2025 para 2025/26" value={academicYear} onChangeText={setAcademicYear} keyboardType="number-pad" maxLength={4} />
         <AppInput label="Tentativa" value={attempt} onChangeText={setAttempt} keyboardType="number-pad" maxLength={2} hint="Para uma cadeira sem histórico, começa em 1." />
-        {formError && <AppText variant="caption" tone="secondary" accessibilityRole="alert">{formError}</AppText>}
+        {formError && <AppText variant="caption" style={{ color: colors.error.text }} accessibilityRole="alert">{formError}</AppText>}
         <AppButton title="Confirmar e adicionar" loading={saving} disabled={!selectedUnit || catalogLoading || !catalogReady} onPress={confirmGrade} />
       </AppCard>}
 
@@ -173,8 +173,10 @@ export default function GradesScreen() {
               </View>
               <AppText variant="heading" tone="accent">{course.latestGraded?.grade == null ? '—' : formatGrade(course.latestGraded.grade)}</AppText>
             </View>
-            {course.attempts.length === 1 ? <AppText variant="caption" tone="secondary">{course.attempts[0].academicYearLabel} · tentativa {course.attempts[0].attempt} · {course.attempts[0].grade == null ? 'Sem nota' : 'Com nota'}</AppText> : <>
-              <AppButton title={isExpanded ? 'Ocultar tentativas' : 'Ver tentativas'} variant="outline" size="sm" onPress={() => setExpanded((current) => isExpanded ? current.filter((code) => code !== course.code) : [...current, course.code])} />
+            {course.attempts.length === 1 ? <AppText variant="caption" tone="secondary">{course.attempts[0].academicYearLabel} · tentativa {course.attempts[0].attempt}</AppText> : <>
+              <Pressable accessibilityRole="button" accessibilityLabel={isExpanded ? `Ocultar tentativas de ${course.name}` : `Ver tentativas de ${course.name}`} accessibilityState={{ expanded: isExpanded }} onPress={() => setExpanded((current) => isExpanded ? current.filter((code) => code !== course.code) : [...current, course.code])} style={({ pressed }) => [styles.historyAction, pressed && styles.pressed]}>
+                <AppText variant="caption" tone="accent">{isExpanded ? 'Ocultar histórico ⌃' : `Ver ${course.attempts.length} tentativas ⌄`}</AppText>
+              </Pressable>
               {isExpanded && course.attempts.map((item, index) => <View key={item.id} style={[styles.attemptRow, { borderTopColor: colors.border }]}>
                 <AppText variant="caption" tone="secondary">{item.academicYearLabel} · tentativa {item.attempt} · {index === 0 ? 'Mais recente' : 'Anterior'}</AppText>
                 <AppText variant="label">{item.grade == null ? 'Sem nota' : formatGrade(item.grade)}</AppText>
@@ -189,12 +191,13 @@ export default function GradesScreen() {
 
 const styles = StyleSheet.create({
   stack: { gap: spacing.sm },
-  summaryCard: { gap: spacing.sm },
-  summaryRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
+  summaryCard: { gap: spacing.xs, paddingVertical: spacing.sm },
+  summaryRow: { flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', gap: spacing.sm },
   form: { gap: spacing.md },
   results: { gap: spacing.xs },
   result: { borderWidth: borderWidth.thin, borderRadius: radius.md, padding: spacing.sm, gap: spacing.xxs },
-  courseCard: { gap: spacing.sm },
-  attemptRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm, paddingTop: spacing.xs, borderTopWidth: borderWidth.thin },
+  courseCard: { gap: spacing.xs, paddingVertical: spacing.sm },
+  historyAction: { alignSelf: 'flex-start', minHeight: 40, justifyContent: 'center' },
+  attemptRow: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: spacing.sm, paddingTop: spacing.xs, borderTopWidth: borderWidth.thin },
   pressed: { opacity: opacity.pressed },
 });

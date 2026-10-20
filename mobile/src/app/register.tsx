@@ -57,7 +57,7 @@ export default function RegisterScreen() {
     setPassword('');
     setConfirmation('');
     if (role === 'aluno') {
-      await startStudentSession(email, { name: name.trim(), curricularYear: curricularYear! });
+      await startStudentSession(email, { name: name.trim(), studentNumber: studentNumber.trim(), curricularYear: curricularYear! });
     } else {
       router.push({ pathname: '/demo', params: { role, source: 'register' } });
     }
@@ -158,9 +158,9 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  page: { flexGrow: 1, justifyContent: 'space-between', gap: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.xl },
+  page: { flexGrow: 1, justifyContent: 'space-between', gap: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.xl },
   intro: { gap: spacing.xs },
-  form: { gap: spacing.lg },
+  form: { gap: spacing.md },
   years: { gap: spacing.sm },
   yearRow: { flexDirection: 'row', gap: spacing.sm },
   year: { flex: 1, alignItems: 'center', paddingVertical: spacing.md, borderWidth: borderWidth.thin, borderRadius: radius.md },
