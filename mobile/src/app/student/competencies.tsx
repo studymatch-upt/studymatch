@@ -36,7 +36,7 @@ export default function Competencies() {
         <AppText variant="caption" tone="accent">{exampleName ? 'IDENTIDADE DE EXEMPLO' : 'AUTOAVALIAÇÃO LOCAL'}</AppText>
       </View>
       <View style={styles.overall}>
-        <AppText variant="heading" tone="accent">—</AppText>
+        <AppText variant="heading" tone="accent">{profile?.overallScore == null ? '—' : Math.round(profile.overallScore)}</AppText>
         <AppText variant="caption" tone="secondary" style={styles.overallLabel}>OVERALL</AppText>
       </View>
     </AppCard>
@@ -64,23 +64,28 @@ export default function Competencies() {
     </AppCard>
 
     <AppCard style={styles.card}>
-      <AppText variant="label" accessibilityRole="header">Origem das pontuações</AppText>
+      <AppText variant="label" accessibilityRole="header">Origem do perfil</AppText>
       {profile?.source === 'official' && profile.questionnaireWeight !== null && profile.academicWeight !== null ? <>
-        <View style={[styles.weightTrack, { backgroundColor: colors.track }]}>
-          <View style={{ width: `${Math.round(profile.questionnaireWeight * 100)}%`, height: '100%', backgroundColor: colors.primaryBright }} />
+        <View accessible accessibilityRole="image" accessibilityLabel={`${Math.round(profile.questionnaireWeight * 100)} por cento questionário, ${Math.round(profile.academicWeight * 100)} por cento notas académicas`} style={[styles.weightTrack, { backgroundColor: colors.track }]}>
+          <View style={{ width: `${profile.questionnaireWeight * 100}%`, height: '100%', backgroundColor: colors.primaryBright }} />
+          <View style={{ width: `${profile.academicWeight * 100}%`, height: '100%', backgroundColor: colors.textSecondary }} />
         </View>
-        <View style={studentStyles.spread}>
-          <AppText variant="caption" tone="accent">{Math.round(profile.questionnaireWeight * 100)}% Questionário</AppText>
-          <AppText variant="caption" tone="secondary">{Math.round(profile.academicWeight * 100)}% Notas</AppText>
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: colors.primaryBright }]} />
+            <AppText variant="caption">Questionário · {Math.round(profile.questionnaireWeight * 100)}%</AppText>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: colors.textSecondary }]} />
+            <AppText variant="caption">Notas · {Math.round(profile.academicWeight * 100)}%</AppText>
+          </View>
         </View>
+        <AppText variant="caption" tone="secondary">O peso das notas aumenta à medida que concluis unidades curriculares avaliadas.</AppText>
         {profile.unknownCompetencies.length > 0 && <AppText variant="caption" tone="secondary">{profile.unknownCompetencies.length} áreas ainda sem dados.</AppText>}
       </> : <>
-        <View style={[styles.weightTrack, { backgroundColor: colors.track }]} />
-        <View style={studentStyles.spread}>
-          <AppText variant="caption" tone="accent">Questionário · local</AppText>
-          <AppText variant="caption" tone="secondary">Notas · sem dados</AppText>
-        </View>
-        <AppText variant="caption" tone="secondary">Autoavaliação guardada neste dispositivo. Ainda sem dados académicos combinados nem nota Overall.</AppText>
+        <AppText variant="label" tone="accent">Autoavaliação local</AppText>
+        <AppText variant="caption" tone="secondary">Dados académicos ainda não associados.</AppText>
+        <AppText variant="caption" tone="secondary">O radar mostra apenas as tuas respostas guardadas neste dispositivo.</AppText>
       </>}
     </AppCard>
 
@@ -99,5 +104,8 @@ const styles = StyleSheet.create({
   bars: { gap: spacing.sm },
   bar: { gap: spacing.xxs },
   barLabel: { flex: 1 },
-  weightTrack: { width: '100%', height: 7, borderRadius: radius.pill, overflow: 'hidden' },
+  weightTrack: { width: '100%', height: 8, borderRadius: radius.pill, overflow: 'hidden', flexDirection: 'row' },
+  legend: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  legendDot: { width: spacing.xs, height: spacing.xs, borderRadius: radius.pill },
 });

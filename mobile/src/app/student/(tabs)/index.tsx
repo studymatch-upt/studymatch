@@ -30,7 +30,7 @@ export default function StudentHome() {
         <AppCard style={styles.overall}>
           <View style={studentStyles.spread}>
             <View style={studentStyles.copy}>
-              <AppText variant="label">Overall</AppText>
+              <AppText variant="label">Overall · {profile?.overallScore == null ? '—' : Math.round(profile.overallScore)}</AppText>
               <AppText variant="caption" tone="secondary">Perfil de competências</AppText>
             </View>
             <AppText variant="caption" tone="accent">Ver perfil ↗</AppText>
@@ -41,7 +41,7 @@ export default function StudentHome() {
             </View>
             <View style={[studentStyles.copy, studentStyles.flex]}>
               <AppText variant="label" numberOfLines={1}>{identity?.name || `${demoStudent.name} · exemplo`}</AppText>
-              <AppText variant="caption" tone="secondary">Autoavaliação local · seis competências</AppText>
+              <AppText variant="caption" tone="secondary">{profile?.source === 'official' ? 'Perfil académico' : 'Autoavaliação local'} · seis competências</AppText>
               <AppText variant="caption" tone="secondary">Sem nota global oficial</AppText>
             </View>
           </View>

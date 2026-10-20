@@ -44,21 +44,26 @@ function fillStrips(points: Point[], color: string) {
   return rows;
 }
 
-// The six-axis grid is always visible; a data polygon appears only with six known scores.
+// Keep unknown competencies unplotted; zero is reserved for a known 0% score.
 export function CompetencyRadar({ size = 96, scores }: { size?: number; scores?: CompetencyScores }) {
   const { colors } = useTheme();
   const center = size / 2;
   const outer = center - 5;
   const points = competencyAxes.map((_, i) => vertex(i, outer, center));
-  const complete = scores && competencyAxes.every((key) => Number.isFinite(scores[key]) && scores[key]! >= 0 && scores[key]! <= 100);
-  const dataPoints = complete ? competencyAxes.map((key, i) => vertex(i, outer * scores[key]! / 100, center)) : null;
+  const dataPoints = competencyAxes.map((key, i) => {
+    const score = scores?.[key];
+    return score !== undefined && Number.isFinite(score) && score >= 0 && score <= 100
+      ? vertex(i, outer * score / 100, center) : null;
+  });
+  const knownCount = dataPoints.filter((point) => point !== null).length;
+  const complete = knownCount === competencyAxes.length;
   return (
-    <View accessibilityRole="image" accessibilityLabel={complete ? 'Radar das seis competências, com valores de 0 a 100 por eixo' : 'Radar sem pontuações disponíveis'} style={[styles.container, { width: size, height: size }]}>
-      {dataPoints && fillStrips(dataPoints, `${colors.primaryBright}30`)}
+    <View accessibilityRole="image" accessibilityLabel={knownCount === 0 ? 'Radar sem pontuações disponíveis' : `Radar com ${knownCount} competências conhecidas em seis eixos`} style={[styles.container, { width: size, height: size }]}>
+      {complete && fillStrips(dataPoints.filter((point): point is Point => point !== null), `${colors.primaryBright}30`)}
       {[1 / 3, 2 / 3, 1].flatMap((level) => points.map((_, i) => <Segment key={`${level}-${i}`} from={vertex(i, outer * level, center)} to={vertex((i + 1) % 6, outer * level, center)} color={colors.border} />))}
       {points.map((point, i) => <Segment key={`axis-${i}`} from={{ x: center, y: center }} to={point} color={colors.border} />)}
-      {dataPoints?.map((point, i) => <Segment key={`score-${i}`} from={point} to={dataPoints[(i + 1) % 6]} color={colors.primaryBright} width={2} />)}
-      {dataPoints?.map((point, i) => <View key={`dot-${i}`} style={[styles.dot, { left: point.x - 2, top: point.y - 2, backgroundColor: colors.primaryBright }]} />)}
+      {dataPoints.map((point, i) => point && dataPoints[(i + 1) % 6] ? <Segment key={`score-${i}`} from={point} to={dataPoints[(i + 1) % 6]!} color={colors.primaryBright} width={2} /> : null)}
+      {dataPoints.map((point, i) => point ? <View key={`dot-${i}`} style={[styles.dot, { left: point.x - 2, top: point.y - 2, backgroundColor: colors.primaryBright }]} /> : null)}
     </View>
   );
 }
