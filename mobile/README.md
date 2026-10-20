@@ -18,7 +18,7 @@ Para a Development Build instalada no iPhone, usar `npx expo start --dev-client`
 
 No portátil, configurar `EXPO_PUBLIC_STUDYMATCH_API_URL` antes de iniciar o Expo. Usar o endereço HTTP do backend acessível pelo iPhone na mesma rede, com a porta do serviço, por exemplo `http://<ENDERECO_DO_PORTATIL>:8080`. Não usar `localhost` no iPhone. Pode guardar a variável em `mobile/.env.local` (ignorado pelo Git) ou defini-la na sessão do terminal. Reiniciar o Expo depois de mudar o valor.
 
-Em desenvolvimento, a entrada principal é o painel “Alunos de teste”, com Carla Mendes e Diogo Ferreira; o Login continua acessível por um botão separado. A escolha de um aluno não pede palavra-passe: consulta `GET /api/students` e procura `carla@school.test` ou `diogo@school.test`, depois lê estudante, questionário, inscrições e perfil pelas APIs existentes. Os IDs vêm sempre da API. A sessão é demonstrativa e não autentica uma conta. Em Perfil, “Voltar aos alunos de teste” termina a sessão e permite escolher o outro aluno. O botão “Atualizar dados” volta a ler as quatro fontes. Não há escrita no backend nem edição de notas nesta etapa.
+Em desenvolvimento, a entrada principal é o painel “Alunos de teste”, com Carla Mendes e Diogo Ferreira; o Login continua acessível por um botão separado. A escolha de um aluno não pede palavra-passe: consulta `GET /api/students` e procura `carla@school.test` ou `diogo@school.test`, depois lê estudante, questionário, inscrições e perfil pelas APIs existentes. Os IDs vêm sempre da API. A sessão é demonstrativa e não autentica uma conta. Em Perfil, “Voltar aos alunos de teste” termina a sessão e permite escolher o outro aluno. O botão “Atualizar dados” volta a ler as quatro fontes.
 
 Sem backend acessível ou sem a conta escolhida na base de dados, o painel mostra um erro e oferece nova tentativa, mantendo os dois botões visíveis. As respostas do questionário local continuam guardadas separadamente e nunca substituem o perfil oficial desses alunos.
 
@@ -30,7 +30,7 @@ No login, introduzir um email com formato válido, uma palavra-passe não vazia 
 - Notas: o cartão compacto do Início abre um ecrã secundário. Para Carla/Diogo, usa as inscrições reais e o catálogo de `GET /api/course-units` para agrupar o histórico por ano curricular e semestre. A Média simples (0–20) conta só a tentativa com nota mais recente de cada cadeira; não é o Overall de competências.
 - Projetos: disponíveis e inscrições, detalhes informativos e estados vazios.
 - Grupos: ativos e concluídos, detalhes informativos e estados vazios.
-- Perfil: dados fictícios na sessão local ou dados lidos do backend para Carla/Diogo, tema claro/escuro/sistema e saída para o login.
+- Perfil: dados fictícios na sessão local ou dados lidos do backend para Carla/Diogo, tema claro/escuro/sistema e saída para o painel de alunos de teste.
 
 Os exemplos estão centralizados em `src/features/student/data.ts`. A sessão demonstrativa vive apenas em memória; reiniciar a aplicação exige voltar a entrar. Não é autenticação. O tema usa a persistência local já existente.
 
@@ -53,11 +53,12 @@ As rotas do aluno ficam em `src/app/student/`, os elementos partilhados desta fu
 
 ### Revisão manual no iPhone
 
-1. Confirmar os três perfis no login; Aluno abre Início, Professor/Admin mantêm a confirmação demonstrativa.
+1. No painel inicial de desenvolvimento, escolher Carla e Diogo separadamente; confirmar que entram diretamente no Dashboard com os seus dados. O Login anterior continua acessível pelo botão próprio.
 2. Alternar pelos quatro separadores; abrir e voltar de competências, projeto e grupo.
 3. Alternar Disponíveis/Inscrições e Ativos/Concluídos; verificar os estados vazios.
 4. No Perfil, experimentar claro/escuro/sistema e confirmar legibilidade, rolagem e safe areas.
-5. Terminar a sessão: regressar ao login e confirmar que voltar não reabre a área do aluno.
+5. Em Perfil, voltar ao painel de alunos de teste e escolher o outro aluno; confirmar que os dados não se misturam.
 6. No registo, confirmar que Número de aluno só aparece para Aluno, que é obrigatório e rejeita letras; Professor/Admin não o exigem.
+7. Em Notas, confirmar média, tentativas e grupos por ano/semestre. Apenas num backend de demonstração preparado para isso, confirmar uma nota manualmente e verificar a atualização do perfil; os testes automáticos usam mocks e não criam notas reais.
 
 TypeScript, lint e exportação de bundles não substituem esta revisão visual num dispositivo. O projeto não inclui `react-native-web`; não foi gerado um preview web.
