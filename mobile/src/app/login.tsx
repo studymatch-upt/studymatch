@@ -18,11 +18,13 @@ import { EntryHeader } from '@/components/EntryHeader';
 import { RoleSelector, type DemoRole } from '@/components/RoleSelector';
 import { Screen } from '@/components/Screen';
 import { emailError as getEmailError } from '@/features/entry/validation';
+import { useDemoSession } from '@/features/student/DemoSession';
 import { useTheme } from '@/theme/ThemeProvider';
 import { dimensions, opacity, spacing } from '@/theme/tokens';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { setStudentActive } = useDemoSession();
   const { colors } = useTheme();
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
   const navigating = useRef(false);
@@ -49,7 +51,11 @@ export default function LoginScreen() {
     navigating.current = true;
     setSubmitting(true);
     setPassword('');
-    router.push({ pathname: '/demo', params: { role } });
+    if (role === 'aluno') {
+      setStudentActive(true);
+    } else {
+      router.push({ pathname: '/demo', params: { role } });
+    }
   }
 
   return (
