@@ -1,6 +1,6 @@
 # StudyMatch — Adaptive Student Group Formation
 
-> Software Quality project · UPT · 2026/2027 · Team: Tomás, César, Aly
+> Software Quality project · UPT · 2026/2027 · Team: Tomás Silva 50959, Alykhan Jamal 50475, César Almeida 47887
 
 StudyMatch forms student work groups **automatically**, using what each student accumulates during the degree: grades, competencies, strengths and preferences. Instead of random groups or groups of friends, every group gets a balanced mix of the skills the activity needs.
 
