@@ -18,9 +18,9 @@ Para a Development Build instalada no iPhone, usar `npx expo start --dev-client`
 
 No portátil, configurar `EXPO_PUBLIC_STUDYMATCH_API_URL` antes de iniciar o Expo. Usar o endereço HTTP do backend acessível pelo iPhone na mesma rede, com a porta do serviço, por exemplo `http://<ENDERECO_DO_PORTATIL>:8080`. Não usar `localhost` no iPhone. Pode guardar a variável em `mobile/.env.local` (ignorado pelo Git) ou defini-la na sessão do terminal. Reiniciar o Expo depois de mudar o valor.
 
-O login mostra uma pequena área “Alunos de teste” apenas em desenvolvimento. Ela consulta `GET /api/students` para encontrar Carla Mendes e Diogo Ferreira; ao selecionar um, lê estudante, questionário, inscrições e perfil pelas APIs existentes. Os IDs vêm sempre da API. A sessão é demonstrativa e não autentica uma conta. O botão “Atualizar dados” volta a ler as quatro fontes. Não há escrita no backend nem edição de notas nesta etapa.
+O login mostra “Contas de teste” apenas em desenvolvimento, com botões para entrar diretamente como Carla Mendes ou Diogo Ferreira sem palavra-passe. Ao tocar num deles, consulta `GET /api/students` e procura `carla@school.test` ou `diogo@school.test`; depois lê estudante, questionário, inscrições e perfil pelas APIs existentes. Os IDs vêm sempre da API. A sessão é demonstrativa e não autentica uma conta. O botão “Atualizar dados” volta a ler as quatro fontes. Não há escrita no backend nem edição de notas nesta etapa.
 
-Sem backend acessível, a área mostra um erro e oferece nova tentativa. Sem estes alunos na base de dados, mostra um estado vazio. As respostas do questionário local continuam guardadas separadamente e nunca substituem o perfil oficial desses alunos.
+Sem backend acessível ou sem a conta escolhida na base de dados, a área mostra um erro e oferece nova tentativa, mantendo os dois botões visíveis. As respostas do questionário local continuam guardadas separadamente e nunca substituem o perfil oficial desses alunos.
 
 ## Experiência demonstrativa do Aluno
 

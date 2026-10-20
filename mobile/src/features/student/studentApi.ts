@@ -27,7 +27,8 @@ export type OfficialStudentData = {
   profile: ApiProfile;
 };
 
-export const demoStudentNames = ['Carla Mendes', 'Diogo Ferreira'] as const;
+export const demoStudentEmails = ['carla@school.test', 'diogo@school.test'] as const;
+export type DemoStudentEmail = typeof demoStudentEmails[number];
 const competencyKeys = new Set<string>(competencies.map(({ key }) => key));
 
 function apiBase() {
@@ -139,7 +140,14 @@ export async function getDemoStudents(): Promise<ApiStudent[]> {
   const data = await getJson('/api/students');
   if (!Array.isArray(data)) throw new Error('Lista de alunos inválida no backend.');
   const students = data.map(student);
-  return demoStudentNames.flatMap((name) => students.filter((item) => item.name.toLocaleLowerCase('pt-PT') === name.toLocaleLowerCase('pt-PT')));
+  return demoStudentEmails.flatMap((email) => students.filter((item) => item.email.toLowerCase() === email));
+}
+
+export async function getDemoStudentByEmail(email: DemoStudentEmail): Promise<ApiStudent> {
+  const students = await getDemoStudents();
+  const selected = students.find((item) => item.email.toLowerCase() === email);
+  if (!selected) throw new Error(`A conta de teste ${email} não foi encontrada no backend.`);
+  return selected;
 }
 
 export async function getOfficialStudentData(studentId: number): Promise<OfficialStudentData> {
@@ -149,7 +157,7 @@ export async function getOfficialStudentData(studentId: number): Promise<Officia
     getJson(path), getJson(`${path}/questionnaire`), getJson(`${path}/enrollments`), getJson(`${path}/profile`),
   ]);
   const selected = student(rawStudent);
-  if (selected.id !== studentId || !demoStudentNames.some((name) => name.toLocaleLowerCase('pt-PT') === selected.name.toLocaleLowerCase('pt-PT'))) {
+  if (selected.id !== studentId || !demoStudentEmails.some((email) => email === selected.email.toLowerCase())) {
     throw new Error('O aluno selecionado já não corresponde ao catálogo demonstrativo.');
   }
   if (!Array.isArray(rawEnrollments)) throw new Error('Lista de inscrições inválida no backend.');
