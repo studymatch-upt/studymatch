@@ -8,6 +8,7 @@ import { CompetencyRadar } from '@/features/student/CompetencyRadar';
 import { selectCompetencyProfile } from '@/features/student/competencyProfile';
 import { useDemoSession } from '@/features/student/DemoSession';
 import { demoStudent } from '@/features/student/data';
+import { formatGrade, gradeSummary } from '@/features/student/academicGrades';
 import { OfficialDataStatus } from '@/features/student/OfficialDataStatus';
 import { StudentIcon, type StudentIconName } from '@/features/student/StudentIcon';
 import { StudentPage, studentStyles } from '@/features/student/StudentPage';
@@ -25,6 +26,7 @@ export default function StudentHome() {
   const { colors } = useTheme();
   const { record, identity, official } = useDemoSession();
   const profile = selectCompetencyProfile(record, official?.profile, official?.student.id);
+  const grades = official ? gradeSummary(official.enrollments) : null;
   const name = official?.student.name ?? identity?.name ?? `${demoStudent.name} · exemplo`;
   const subtitle = official ? `Aluno de teste · ${official.student.curricularYear ? `${official.student.curricularYear}.º ano` : 'ano não indicado'}` : `${demoStudent.course} · exemplo`;
   return (
@@ -41,13 +43,28 @@ export default function StudentHome() {
           </View>
           <View style={styles.radarRow}>
             <View style={[styles.radarBox, { backgroundColor: colors.surfaceRaised }]}>
-              <CompetencyRadar size={82} scores={profile?.scores} />
+              <CompetencyRadar size={74} scores={profile?.scores} />
             </View>
             <View style={[studentStyles.copy, studentStyles.flex]}>
               <AppText variant="label" numberOfLines={1}>{name}</AppText>
               <AppText variant="caption" tone="secondary">{profile?.source === 'official' ? 'Perfil académico' : 'Autoavaliação local'} · seis competências</AppText>
               <AppText variant="caption" tone="secondary">Sem nota global oficial</AppText>
             </View>
+          </View>
+        </AppCard>
+      </Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Ver notas académicas" onPress={() => router.push('/student/grades')} style={({ pressed }) => pressed && styles.pressed}>
+        <AppCard style={styles.gradesCard}>
+          <View style={[studentStyles.spread, studentStyles.flex]}>
+            <View style={studentStyles.copy}>
+              <AppText variant="label">Notas</AppText>
+              <AppText variant="caption" tone="secondary">Média simples · 0 a 20</AppText>
+            </View>
+            <AppText variant="caption" tone="accent">Ver notas ↗</AppText>
+          </View>
+          <View style={styles.gradesSummary}>
+            <AppText variant="heading" tone="accent">{grades?.mean == null ? '—' : formatGrade(grades.mean)}</AppText>
+            <AppText variant="caption" tone="secondary">{grades ? `${grades.count} ${grades.count === 1 ? 'cadeira avaliada' : 'cadeiras avaliadas'}` : 'Sem dados académicos associados'}</AppText>
           </View>
         </AppCard>
       </Pressable>
@@ -69,9 +86,11 @@ export default function StudentHome() {
 }
 
 const styles = StyleSheet.create({
-  overall: { gap: spacing.sm, paddingVertical: spacing.sm },
+  overall: { gap: spacing.xs, paddingVertical: spacing.xs },
   radarRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  radarBox: { width: 88, height: 88, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  radarBox: { width: 78, height: 78, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  gradesCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
+  gradesSummary: { alignItems: 'flex-end', gap: spacing.xxs },
   stats: { flexDirection: 'row', gap: spacing.xs },
   statAction: { flex: 1, minWidth: 0 },
   stat: { height: 104, alignItems: 'center', justifyContent: 'center', gap: spacing.xxs, paddingHorizontal: spacing.xxs, paddingVertical: spacing.xs },

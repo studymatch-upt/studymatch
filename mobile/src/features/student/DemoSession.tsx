@@ -15,7 +15,7 @@ type Session = {
   storageError: string | null;
   startStudentSession: (email: string, details?: Omit<StudentIdentity, 'email'>) => Promise<void>;
   startOfficialStudentSession: (student: ApiStudent) => Promise<void>;
-  refreshOfficial: () => Promise<void>;
+  refreshOfficial: () => Promise<boolean>;
   answerQuestion: (index: number, answer: Answer) => void;
   goToStep: (step: number) => void;
   finishQuestionnaire: () => Promise<AggregatedAnswers>;
@@ -73,15 +73,20 @@ export function DemoSessionProvider({ children }: PropsWithChildren) {
 
   async function refreshOfficial() {
     const id = officialId.current;
-    if (id === null) return;
+    if (id === null) return false;
     const version = ++requestVersion.current;
     setOfficialLoading(true);
     setOfficialError(null);
     try {
       const data = await getOfficialStudentData(id);
-      if (version === requestVersion.current) setOfficial(data);
+      if (version === requestVersion.current) {
+        setOfficial(data);
+        return true;
+      }
+      return false;
     } catch (error) {
       if (version === requestVersion.current) setOfficialError(error instanceof Error ? error.message : 'Não foi possível atualizar os dados.');
+      return false;
     } finally {
       if (version === requestVersion.current) setOfficialLoading(false);
     }
