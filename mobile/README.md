@@ -18,12 +18,14 @@ Para a Development Build instalada no iPhone, usar `npx expo start --dev-client`
 
 No login, introduzir um email com formato válido, uma palavra-passe não vazia e selecionar Aluno. O acesso abre os separadores Início, Projetos, Grupos e Perfil. Professor e Admin continuam no ecrã demonstrativo anterior. O registo continua a ser uma simulação e não inicia sessão nem cria uma conta.
 
-- Início: identidade fictícia, resumo de competências, atividade calculada a partir dos exemplos e calendário do mês atual, sem eventos.
+- Início: identidade ilustrativa, cartão Overall com radar de seis eixos, indicadores de atividade sem números até existir uma fonte legítima, e calendário semanal expansível para o mês completo. É possível selecionar um dia e navegar entre meses; a legenda de entregas não representa eventos existentes.
 - Projetos: disponíveis e inscrições, detalhes informativos e estados vazios.
 - Grupos: ativos e concluídos, detalhes informativos e estados vazios.
 - Perfil: dados fictícios, tema claro/escuro/sistema e saída para o login.
 
 Os exemplos estão centralizados em `src/features/student/data.ts`. A sessão demonstrativa vive apenas em memória; reiniciar a aplicação exige voltar a entrar. Não é autenticação. O tema usa a persistência local já existente.
+
+O cartão Overall não apresenta pontuação global: o backend ainda não fornece esse valor. O mini radar mantém os seis eixos e só desenha uma linha de dados quando as seis pontuações conhecidas forem fornecidas. Nesta fase, o login demonstrativo não estabelece uma associação segura a um `studentId`; os indicadores de atividade ficam sem números e não são pedidos dados académicos ao backend.
 
 O radar, questionário, inscrições, membros reais, matching, autenticação e integração com API ficam para Issues próprios.
 
@@ -33,6 +35,7 @@ O radar, questionário, inscrições, membros reais, matching, autenticação e 
 npm run typecheck
 npm run lint
 npm run doctor
+node --test src/features/student/calendarDates.test.mjs
 npx expo export --platform ios --platform android --output-dir .expo/student-bundles
 ```
 

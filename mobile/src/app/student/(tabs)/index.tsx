@@ -1,54 +1,59 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
-import { AppButton } from '@/components/AppButton';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { AppCard } from '@/components/AppCard';
 import { AppText } from '@/components/AppText';
-import { EmptyState } from '@/components/EmptyState';
+import { BrandMark } from '@/components/BrandMark';
 import { CalendarCard } from '@/features/student/CalendarCard';
-import { demoGroups, demoProjects, demoStudent } from '@/features/student/data';
+import { CompetencyRadar } from '@/features/student/CompetencyRadar';
+import { demoStudent } from '@/features/student/data';
 import { StudentIcon, type StudentIconName } from '@/features/student/StudentIcon';
 import { StudentPage, studentStyles } from '@/features/student/StudentPage';
 import { useTheme } from '@/theme/ThemeProvider';
-import { borderWidth, radius, spacing } from '@/theme/tokens';
+import { dimensions, opacity, radius, spacing } from '@/theme/tokens';
+
+const activity: { title: string; icon: StudentIconName; path: '/student/groups' | '/student/projects' }[] = [
+  { title: 'Grupos ativos', icon: 'groups', path: '/student/groups' },
+  { title: 'Inscrições', icon: 'projects', path: '/student/projects' },
+  { title: 'Concluídos', icon: 'calendar', path: '/student/groups' },
+];
 
 export default function StudentHome() {
   const router = useRouter();
   const { colors } = useTheme();
-  const stats: { title: string; count: number; icon: StudentIconName }[] = [
-    { title: 'Grupos ativos', count: demoGroups.filter((g) => g.status === 'active').length, icon: 'groups' },
-    { title: 'Inscrições', count: demoProjects.filter((p) => p.status === 'enrolled').length, icon: 'projects' },
-    { title: 'Concluídos', count: demoGroups.filter((g) => g.status === 'completed').length, icon: 'calendar' },
-  ];
   return (
-    <StudentPage title={`Olá, ${demoStudent.firstName}!`} subtitle={`${demoStudent.course} · O teu espaço académico`}>
-      <AppCard style={studentStyles.stack}>
-        <AppText variant="label" accessibilityRole="header">O teu perfil de competências</AppText>
-        <View style={studentStyles.row}>
-          <View style={[styles.radar, { backgroundColor: colors.surfaceRaised, borderColor: colors.border }]} accessibilityLabel="Espaço reservado para o radar de competências">
-            <View style={[styles.radarInner, { borderColor: colors.accentText }]} />
-            <View style={[styles.radarDot, { backgroundColor: colors.primaryBright }]} />
+    <StudentPage compactHeader title={`Olá, ${demoStudent.firstName}!`} subtitle={demoStudent.course} headerAccessory={<View accessibilityLabel="StudyMatch"><BrandMark size={dimensions.symbol} /></View>}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Ver perfil de competências" onPress={() => router.push('/student/competencies')} style={({ pressed }) => pressed && styles.pressed}>
+        <AppCard style={styles.overall}>
+          <View style={studentStyles.spread}>
+            <View style={studentStyles.copy}>
+              <AppText variant="label">Overall</AppText>
+              <AppText variant="caption" tone="secondary">Perfil de competências</AppText>
+            </View>
+            <AppText variant="caption" tone="accent">Ver perfil ↗</AppText>
           </View>
-          <View style={[studentStyles.copy, studentStyles.flex]}>
-            <AppText variant="label">As tuas competências</AppText>
-            <AppText variant="caption" tone="secondary">6 áreas para conheceres melhor o teu potencial.</AppText>
+          <View style={styles.radarRow}>
+            <View style={[styles.radarBox, { backgroundColor: colors.surfaceRaised }]}>
+              <CompetencyRadar size={82} />
+            </View>
+            <View style={[studentStyles.copy, studentStyles.flex]}>
+              <AppText variant="label">{demoStudent.name}</AppText>
+              <AppText variant="caption" tone="secondary">Ainda sem pontuações</AppText>
+              <AppText variant="caption" tone="secondary">As seis áreas vão aparecer aqui após a avaliação.</AppText>
+            </View>
           </View>
-        </View>
-        <AppButton title="Ver competências" variant="secondary" size="sm" onPress={() => router.push('/student/competencies')} />
-      </AppCard>
+        </AppCard>
+      </Pressable>
       <View style={studentStyles.stack}>
-        <View style={studentStyles.spread}>
-          <AppText variant="label" accessibilityRole="header">A tua atividade</AppText>
-          <AppText variant="caption" tone="secondary">Dados de exemplo</AppText>
+        <AppText variant="label" accessibilityRole="header">A tua atividade</AppText>
+        <View style={styles.stats}>
+          {activity.map((item) => <Pressable key={item.title} accessibilityRole="button" accessibilityLabel={`${item.title}, sem dados disponíveis. Abrir ${item.path === '/student/groups' ? 'Grupos' : 'Projetos'}`} onPress={() => router.push(item.title === 'Concluídos' ? '/student/groups?status=completed' : item.path)} style={({ pressed }) => [styles.statAction, pressed && styles.pressed]}>
+            <AppCard style={styles.stat}>
+              <StudentIcon name={item.icon} color={colors.accentText} size={18} />
+              <AppText variant="heading" accessibilityLabel="Sem dados disponíveis">—</AppText>
+              <AppText variant="caption" tone="secondary" style={styles.center}>{item.title}</AppText>
+            </AppCard>
+          </Pressable>)}
         </View>
-        {stats.every((s) => s.count === 0) ? <EmptyState title="Tudo começa aqui" description="Os teus projetos e grupos vão aparecer neste resumo." /> : (
-          <View style={styles.stats}>
-            {stats.map((stat) => <AppCard key={stat.title} style={styles.stat}>
-              <StudentIcon name={stat.icon} color={colors.accentText} size={18} />
-              <AppText variant="heading">{stat.count}</AppText>
-              <AppText variant="caption" tone="secondary" style={styles.center}>{stat.title}</AppText>
-            </AppCard>)}
-          </View>
-        )}
       </View>
       <CalendarCard />
     </StudentPage>
@@ -56,10 +61,12 @@ export default function StudentHome() {
 }
 
 const styles = StyleSheet.create({
-  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
-  stat: { flex: 1, minWidth: 80, alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.xs },
+  overall: { gap: spacing.sm, paddingVertical: spacing.sm },
+  radarRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  radarBox: { width: 88, height: 88, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  stats: { flexDirection: 'row', gap: spacing.xs },
+  statAction: { flex: 1, minWidth: 0 },
+  stat: { height: 104, alignItems: 'center', justifyContent: 'center', gap: spacing.xxs, paddingHorizontal: spacing.xxs, paddingVertical: spacing.xs },
   center: { textAlign: 'center' },
-  radar: { width: 64, height: 64, borderWidth: borderWidth.thin, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center' },
-  radarInner: { width: 32, height: 32, borderWidth: borderWidth.thin, borderRadius: radius.sm, transform: [{ rotate: '45deg' }] },
-  radarDot: { position: 'absolute', width: spacing.xxs, height: spacing.xxs, borderRadius: radius.pill },
+  pressed: { opacity: opacity.pressed },
 });
