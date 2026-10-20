@@ -8,6 +8,7 @@ import { CompetencyRadar } from '@/features/student/CompetencyRadar';
 import { selectCompetencyProfile } from '@/features/student/competencyProfile';
 import { useDemoSession } from '@/features/student/DemoSession';
 import { demoStudent } from '@/features/student/data';
+import { OfficialDataStatus } from '@/features/student/OfficialDataStatus';
 import { StudentIcon, type StudentIconName } from '@/features/student/StudentIcon';
 import { StudentPage, studentStyles } from '@/features/student/StudentPage';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -22,10 +23,13 @@ const activity: { title: string; icon: StudentIconName; path: '/student/groups' 
 export default function StudentHome() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { record, identity } = useDemoSession();
-  const profile = selectCompetencyProfile(record);
+  const { record, identity, official } = useDemoSession();
+  const profile = selectCompetencyProfile(record, official?.profile, official?.student.id);
+  const name = official?.student.name ?? identity?.name ?? `${demoStudent.name} · exemplo`;
+  const subtitle = official ? `Aluno de teste · ${official.student.curricularYear ? `${official.student.curricularYear}.º ano` : 'ano não indicado'}` : `${demoStudent.course} · exemplo`;
   return (
-    <StudentPage compactHeader title={identity?.name ? `Olá, ${identity.name.split(' ')[0]}!` : 'Olá!'} subtitle={`${demoStudent.course} · exemplo`} headerAccessory={<View accessibilityLabel="StudyMatch"><BrandMark size={dimensions.symbol} /></View>}>
+    <StudentPage compactHeader title={`Olá, ${name.split(' ')[0]}!`} subtitle={subtitle} headerAccessory={<View accessibilityLabel="StudyMatch"><BrandMark size={dimensions.symbol} /></View>}>
+      <OfficialDataStatus />
       <Pressable accessibilityRole="button" accessibilityLabel="Ver perfil de competências" onPress={() => router.push('/student/competencies')} style={({ pressed }) => pressed && styles.pressed}>
         <AppCard style={styles.overall}>
           <View style={studentStyles.spread}>
@@ -40,7 +44,7 @@ export default function StudentHome() {
               <CompetencyRadar size={82} scores={profile?.scores} />
             </View>
             <View style={[studentStyles.copy, studentStyles.flex]}>
-              <AppText variant="label" numberOfLines={1}>{identity?.name || `${demoStudent.name} · exemplo`}</AppText>
+              <AppText variant="label" numberOfLines={1}>{name}</AppText>
               <AppText variant="caption" tone="secondary">{profile?.source === 'official' ? 'Perfil académico' : 'Autoavaliação local'} · seis competências</AppText>
               <AppText variant="caption" tone="secondary">Sem nota global oficial</AppText>
             </View>

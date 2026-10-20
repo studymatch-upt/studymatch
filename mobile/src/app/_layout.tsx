@@ -13,7 +13,7 @@ function Navigation() {
         <Stack.Screen name="register" />
         <Stack.Screen name="demo" />
       </Stack.Protected>
-      <Stack.Protected guard={studentActive} redirectTo="/login">
+      <Stack.Protected guard={studentActive} redirectTo="/">
         <Stack.Screen name="student" />
       </Stack.Protected>
       <Stack.Screen name="design-system" />

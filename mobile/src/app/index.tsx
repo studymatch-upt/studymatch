@@ -6,6 +6,7 @@ import { AppText } from '@/components/AppText';
 import { BrandMark } from '@/components/BrandMark';
 import { EntryHeader } from '@/components/EntryHeader';
 import { Screen } from '@/components/Screen';
+import { DemoAccountPanel } from '@/features/student/DemoAccountPanel';
 import { useTheme } from '@/theme/ThemeProvider';
 import { borderWidth, radius, spacing } from '@/theme/tokens';
 
@@ -14,6 +15,22 @@ export default function WelcomeScreen() {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const artSize = Math.min(width - spacing.xl * 2, 320);
+
+  if (__DEV__) return <Screen>
+    <ScrollView contentContainerStyle={styles.demoPage} showsVerticalScrollIndicator={false}>
+      <EntryHeader label="STUDYMATCH" />
+      <View style={styles.demoContent}>
+        <BrandMark size={56} />
+        <View style={styles.demoCopy}>
+          <AppText variant="title" accessibilityRole="header">Explorar StudyMatch</AppText>
+          <AppText tone="secondary">Escolhe um aluno de teste para ver os dados académicos reais do backend.</AppText>
+        </View>
+        <DemoAccountPanel />
+        <AppButton title="Ir para o Login" variant="outline" onPress={() => router.push('/login')} />
+        <AppText variant="caption" tone="secondary">O painel é demonstrativo e não autentica uma conta.</AppText>
+      </View>
+    </ScrollView>
+  </Screen>;
 
   return (
     <Screen>
@@ -44,6 +61,9 @@ export default function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  demoPage: { flexGrow: 1, gap: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.xl },
+  demoContent: { flex: 1, justifyContent: 'center', gap: spacing.lg },
+  demoCopy: { gap: spacing.xs },
   page: { flexGrow: 1, justifyContent: 'space-between', paddingTop: spacing.sm, paddingBottom: spacing.xl },
   hero: { alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.xl },
   art: { alignItems: 'center', justifyContent: 'center' },
