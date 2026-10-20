@@ -27,6 +27,7 @@ Sem backend acessível ou sem a conta escolhida na base de dados, o painel mostr
 No login, introduzir um email com formato válido, uma palavra-passe não vazia e selecionar Aluno. O acesso abre os separadores Início, Projetos, Grupos e Perfil. Professor e Admin continuam no ecrã demonstrativo anterior. O registo continua a ser uma simulação e não inicia sessão nem cria uma conta.
 
 - Início: identidade ilustrativa na sessão local ou dados do aluno selecionado na sessão de desenvolvimento, cartão Overall com radar de seis eixos, indicadores de atividade sem números até existir uma fonte legítima, e calendário semanal expansível para o mês completo. É possível selecionar um dia e navegar entre meses; a legenda de entregas não representa eventos existentes.
+- Notas: o cartão compacto do Início abre um ecrã secundário. Para Carla/Diogo, usa as inscrições reais e o catálogo de `GET /api/course-units` para agrupar o histórico por ano curricular e semestre. A Média simples (0–20) conta só a tentativa com nota mais recente de cada cadeira; não é o Overall de competências.
 - Projetos: disponíveis e inscrições, detalhes informativos e estados vazios.
 - Grupos: ativos e concluídos, detalhes informativos e estados vazios.
 - Perfil: dados fictícios na sessão local ou dados lidos do backend para Carla/Diogo, tema claro/escuro/sistema e saída para o login.
@@ -35,7 +36,7 @@ Os exemplos estão centralizados em `src/features/student/data.ts`. A sessão de
 
 O cartão Overall não apresenta pontuação global: o backend ainda não fornece esse valor. O mini radar e o radar grande usam o mesmo perfil. A sessão local não estabelece associação a um `studentId`; a seleção Carla/Diogo em desenvolvimento associa apenas o ID devolvido pela API, sem autenticação real. Os indicadores de atividade continuam sem números porque representam projetos/grupos e não inscrições académicas.
 
-O questionário local de 18 perguntas permanece separado do questionário oficial. Inscrições académicas são lidas para Carla/Diogo, mas a sua apresentação detalhada e eventual adição de notas ficam para o Issue do ecrã Notas. Projetos, grupos, matching e autenticação real ficam para Issues próprios.
+O questionário local de 18 perguntas permanece separado do questionário oficial. Em desenvolvimento, Carla/Diogo podem associar uma nota a uma cadeira existente no catálogo, mediante confirmação. O formulário valida nota, ano e tentativa, e volta a consultar o histórico antes do POST para evitar duplicados. Depois de gravar, a aplicação relê inscrições e perfil; se essa atualização falhar, avisa que a nota pode já estar gravada, para evitar novo envio. Projetos, grupos, matching e autenticação real ficam para Issues próprios.
 
 ## Verificações
 
@@ -44,6 +45,7 @@ npm run typecheck
 npm run lint
 npm run doctor
 node --test src/features/student/calendarDates.test.mjs
+node --test src/features/student/academicGrades.test.mjs src/features/student/studentApi.test.mjs
 npx expo export --platform ios --platform android --output-dir .expo/student-bundles
 ```
 

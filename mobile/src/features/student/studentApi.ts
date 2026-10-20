@@ -1,5 +1,6 @@
 import type { ApiProfile } from './competencyProfile.ts';
 import { competencies, type Competency } from './questionnaire.ts';
+import { validateGradeInput, type GradeInput } from './academicGrades.ts';
 
 export type ApiStudent = {
   id: number;
@@ -18,6 +19,14 @@ export type ApiEnrollment = {
   academicYearLabel: string;
   attempt: number;
   grade: number | null;
+};
+
+export type ApiCourseUnit = {
+  id: number;
+  code: string;
+  name: string;
+  curricularYear: number;
+  semester: number;
 };
 
 export type OfficialStudentData = {
@@ -40,10 +49,14 @@ function apiBase() {
 }
 
 async function getJson(path: string): Promise<unknown> {
+  return requestJson(path, { method: 'GET' });
+}
+
+async function requestJson(path: string, options: RequestInit): Promise<unknown> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
   try {
-    const response = await fetch(`${apiBase()}${path}`, { method: 'GET', signal: controller.signal });
+    const response = await fetch(`${apiBase()}${path}`, { ...options, signal: controller.signal });
     if (!response.ok) throw new Error(`O servidor respondeu ${response.status}.`);
     return await response.json();
   } catch (error) {
@@ -53,6 +66,15 @@ async function getJson(path: string): Promise<unknown> {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function courseUnit(value: unknown): ApiCourseUnit {
+  const data = object(value);
+  if (typeof data.code !== 'string' || typeof data.name !== 'string') throw new Error('Dados de unidade curricular inválidos no backend.');
+  return {
+    id: number(data.id), code: data.code, name: data.name,
+    curricularYear: number(data.curricularYear), semester: number(data.semester),
+  };
 }
 
 function object(value: unknown): Record<string, unknown> {
@@ -150,19 +172,44 @@ export async function getDemoStudentByEmail(email: DemoStudentEmail): Promise<Ap
   return selected;
 }
 
+export async function getCourseUnits(): Promise<ApiCourseUnit[]> {
+  const data = await getJson('/api/course-units');
+  if (!Array.isArray(data)) throw new Error('Catálogo de unidades curriculares inválido no backend.');
+  return data.map(courseUnit);
+}
+
+export async function getStudentEnrollments(studentId: number): Promise<ApiEnrollment[]> {
+  if (!Number.isSafeInteger(studentId) || studentId <= 0) throw new Error('Identificador de aluno inválido.');
+  const data = await getJson(`/api/students/${studentId}/enrollments`);
+  if (!Array.isArray(data)) throw new Error('Lista de inscrições inválida no backend.');
+  return data.map(enrollment);
+}
+
+export async function addStudentGrade(studentId: number, input: GradeInput, catalog: ApiCourseUnit[], knownEnrollments: ApiEnrollment[]): Promise<ApiEnrollment> {
+  if (!__DEV__) throw new Error('Adicionar notas está disponível apenas em desenvolvimento.');
+  if (!Number.isSafeInteger(studentId) || studentId <= 0) throw new Error('Identificador de aluno inválido.');
+  validateGradeInput(input, catalog, knownEnrollments);
+  // Recheck the server immediately before writing; its attempt key excludes academicYear.
+  const current = await getStudentEnrollments(studentId);
+  const body = validateGradeInput(input, catalog, current);
+  const created = await requestJson(`/api/students/${studentId}/enrollments`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  return enrollment(created);
+}
+
 export async function getOfficialStudentData(studentId: number): Promise<OfficialStudentData> {
   if (!Number.isSafeInteger(studentId) || studentId <= 0) throw new Error('Identificador de aluno inválido.');
   const path = `/api/students/${studentId}`;
-  const [rawStudent, rawQuestionnaire, rawEnrollments, rawProfile] = await Promise.all([
-    getJson(path), getJson(`${path}/questionnaire`), getJson(`${path}/enrollments`), getJson(`${path}/profile`),
+  const [rawStudent, rawQuestionnaire, enrollments, rawProfile] = await Promise.all([
+    getJson(path), getJson(`${path}/questionnaire`), getStudentEnrollments(studentId), getJson(`${path}/profile`),
   ]);
   const selected = student(rawStudent);
   if (selected.id !== studentId || !demoStudentEmails.some((email) => email === selected.email.toLowerCase())) {
     throw new Error('O aluno selecionado já não corresponde ao catálogo demonstrativo.');
   }
-  if (!Array.isArray(rawEnrollments)) throw new Error('Lista de inscrições inválida no backend.');
   return {
     student: selected, questionnaire: questionnaire(rawQuestionnaire),
-    enrollments: rawEnrollments.map(enrollment), profile: profile(rawProfile, studentId),
+    enrollments, profile: profile(rawProfile, studentId),
   };
 }

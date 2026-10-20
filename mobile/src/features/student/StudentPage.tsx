@@ -8,7 +8,7 @@ import { spacing } from '@/theme/tokens';
 export function StudentPage({ title, subtitle, detail = false, compactHeader = false, headerAccessory, children }: PropsWithChildren<{ title: string; subtitle?: string; detail?: boolean; compactHeader?: boolean; headerAccessory?: ReactNode }>) {
   return (
     <Screen edges={detail ? undefined : ['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
         {detail && <EntryHeader back backTo="/student" label="STUDYMATCH" />}
         <View style={styles.headerRow}>
           <View style={styles.header}>

@@ -11,6 +11,7 @@ export default function StudentLayout() {
     <Stack.Protected guard={record.completed || official !== null} redirectTo="/student/questionnaire">
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="competencies" />
+      <Stack.Screen name="grades" />
       <Stack.Screen name="project/[id]" />
       <Stack.Screen name="group/[id]" />
     </Stack.Protected>
