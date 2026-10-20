@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
 import { AppText } from '@/components/AppText';
@@ -13,8 +14,9 @@ import { dimensions, radius, spacing } from '@/theme/tokens';
 const themes = [{ label: 'Sistema', value: 'system' }, { label: 'Claro', value: 'light' }, { label: 'Escuro', value: 'dark' }] as const;
 
 export default function Profile() {
+  const router = useRouter();
   const { colors, preference, setPreference } = useTheme();
-  const { setStudentActive } = useDemoSession();
+  const { setStudentActive, record, goToStep } = useDemoSession();
   return (
     <StudentPage title="Perfil" subtitle="Uma identidade de exemplo para explorares o StudyMatch.">
       <View style={studentStyles.row}>
@@ -32,6 +34,11 @@ export default function Profile() {
           <AppText variant="label">{demoStudent.number}</AppText>
         </View>
         <AppText variant="caption" tone="secondary">Estes dados são fictícios. A edição do perfil estará disponível numa próxima fase.</AppText>
+      </AppCard>
+      <AppCard style={studentStyles.stack}>
+        <AppText variant="label" accessibilityRole="header">Questionário de competências</AppText>
+        <AppText variant="caption" tone="secondary">{record.completed ? '18 de 18 respostas guardadas neste dispositivo.' : 'Questionário por concluir.'} Esta é uma autoavaliação local de demonstração.</AppText>
+        <AppButton title="Rever ou refazer respostas" variant="secondary" onPress={() => { goToStep(0); router.push('/student/questionnaire'); }} />
       </AppCard>
       <AppCard style={studentStyles.stack}>
         <AppText variant="label" accessibilityRole="header">Aparência</AppText>

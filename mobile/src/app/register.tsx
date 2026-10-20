@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppButton } from '@/components/AppButton';
 import { AppInput } from '@/components/AppInput';
@@ -9,13 +9,18 @@ import { EntryHeader } from '@/components/EntryHeader';
 import { RoleSelector, type DemoRole } from '@/components/RoleSelector';
 import { Screen } from '@/components/Screen';
 import { emailError as getEmailError } from '@/features/entry/validation';
-import { spacing } from '@/theme/tokens';
+import { useDemoSession } from '@/features/student/DemoSession';
+import { useTheme } from '@/theme/ThemeProvider';
+import { borderWidth, radius, spacing } from '@/theme/tokens';
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { startStudentSession } = useDemoSession();
+  const { colors } = useTheme();
   const navigating = useRef(false);
   const [name, setName] = useState('');
   const [studentNumber, setStudentNumber] = useState('');
+  const [curricularYear, setCurricularYear] = useState<1 | 2 | 3 | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -37,20 +42,25 @@ export default function RegisterScreen() {
         ? 'O número de aluno deve conter apenas algarismos.'
         : undefined;
   const emailError = getEmailError(email);
+  const yearError = role === 'aluno' && !curricularYear ? 'Escolhe o teu ano curricular.' : undefined;
   const passwordError = password.length >= 8 ? undefined : 'Usa pelo menos 8 caracteres.';
   const confirmationError = confirmation === password && confirmation
     ? undefined : 'As palavras-passe não coincidem.';
   const roleError = role ? undefined : 'Escolhe o teu perfil.';
 
-  function submit() {
+  async function submit() {
     if (navigating.current) return;
     setAttempted(true);
-    if (nameError || studentNumberError || emailError || passwordError || confirmationError || roleError) return;
+    if (nameError || studentNumberError || yearError || emailError || passwordError || confirmationError || roleError) return;
     navigating.current = true;
     setSubmitting(true);
     setPassword('');
     setConfirmation('');
-    router.push({ pathname: '/demo', params: { role, source: 'register' } });
+    if (role === 'aluno') {
+      await startStudentSession(email, { name: name.trim(), curricularYear: curricularYear! });
+    } else {
+      router.push({ pathname: '/demo', params: { role, source: 'register' } });
+    }
   }
 
   return (
@@ -90,6 +100,29 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               autoCorrect={false}
             />
+            <RoleSelector value={role} onChange={setRole} error={attempted ? roleError : undefined} />
+            {role === 'aluno' && <>
+              <AppInput
+                label="Número de aluno"
+                placeholder="Introduz o teu número de aluno"
+                value={studentNumber}
+                onChangeText={setStudentNumber}
+                error={attempted ? studentNumberError : undefined}
+                keyboardType="number-pad"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="off"
+              />
+              <View style={styles.years}>
+                <AppText variant="label">Ano curricular</AppText>
+                <View style={styles.yearRow}>{([1, 2, 3] as const).map((year) => (
+                  <Pressable key={year} accessibilityRole="radio" accessibilityLabel={`${year}º ano`} accessibilityState={{ checked: curricularYear === year }} onPress={() => setCurricularYear(year)} style={[styles.year, { borderColor: curricularYear === year ? colors.primary : colors.border, backgroundColor: curricularYear === year ? colors.surfaceRaised : colors.surface }]}>
+                    <AppText variant="label">{year}º ano</AppText>
+                  </Pressable>
+                ))}</View>
+                {attempted && yearError && <AppText variant="caption" tone="secondary">{yearError}</AppText>}
+              </View>
+            </>}
             <AppInput
               label="Palavra-passe"
               placeholder="Pelo menos 8 caracteres"
@@ -112,24 +145,10 @@ export default function RegisterScreen() {
               returnKeyType="done"
               onSubmitEditing={submit}
             />
-            <RoleSelector value={role} onChange={setRole} error={attempted ? roleError : undefined} />
-            {role === 'aluno' && (
-              <AppInput
-                label="Número de aluno"
-                placeholder="Introduz o teu número de aluno"
-                value={studentNumber}
-                onChangeText={setStudentNumber}
-                error={attempted ? studentNumberError : undefined}
-                keyboardType="number-pad"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="off"
-              />
-            )}
             <AppButton title="Criar conta" disabled={submitting} onPress={submit} />
           </View>
           <AppText variant="caption" tone="secondary" style={styles.note}>
-            Demonstração académica. O formulário não cria uma conta nem guarda os teus dados.
+            Demonstração académica. Não é criada uma conta real. O questionário é guardado apenas neste dispositivo, associado ao email introduzido.
           </AppText>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -142,5 +161,8 @@ const styles = StyleSheet.create({
   page: { flexGrow: 1, justifyContent: 'space-between', gap: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.xl },
   intro: { gap: spacing.xs },
   form: { gap: spacing.lg },
+  years: { gap: spacing.sm },
+  yearRow: { flexDirection: 'row', gap: spacing.sm },
+  year: { flex: 1, alignItems: 'center', paddingVertical: spacing.md, borderWidth: borderWidth.thin, borderRadius: radius.md },
   note: { textAlign: 'center' },
 });

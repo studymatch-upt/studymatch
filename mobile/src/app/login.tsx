@@ -24,7 +24,7 @@ import { dimensions, opacity, spacing } from '@/theme/tokens';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { setStudentActive } = useDemoSession();
+  const { startStudentSession } = useDemoSession();
   const { colors } = useTheme();
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
   const navigating = useRef(false);
@@ -44,7 +44,7 @@ export default function LoginScreen() {
   const passwordError = password ? undefined : 'Introduz a tua palavra-passe.';
   const roleError = role ? undefined : 'Escolhe o teu perfil.';
 
-  function submit() {
+  async function submit() {
     if (navigating.current) return;
     setAttempted(true);
     if (emailError || passwordError || roleError) return;
@@ -52,7 +52,7 @@ export default function LoginScreen() {
     setSubmitting(true);
     setPassword('');
     if (role === 'aluno') {
-      setStudentActive(true);
+      await startStudentSession(email);
     } else {
       router.push({ pathname: '/demo', params: { role } });
     }
