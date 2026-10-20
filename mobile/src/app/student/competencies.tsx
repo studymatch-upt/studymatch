@@ -24,7 +24,8 @@ export default function Competencies() {
   const { record, identity, official, goToStep } = useDemoSession();
   const profile = selectCompetencyProfile(record, official?.profile, official?.student.id);
   const scores = profile?.scores;
-  const radarSize = Math.min(210, Math.max(144, width - 160));
+  // Screen and card gutters leave 80 pt for the six labels around the chart.
+  const radarSize = Math.min(210, Math.max(96, width - 168));
   const name = official?.student.name ?? identity?.name ?? demoStudent.name;
   const exampleName = !official && !identity?.name;
 
@@ -34,7 +35,7 @@ export default function Competencies() {
       <View style={[styles.avatar, { backgroundColor: colors.surfaceRaised }]}><StudentIcon name="profile" color={colors.accentText} size={22} /></View>
       <View style={styles.identityCopy}>
         <AppText variant="label" numberOfLines={1}>{name}</AppText>
-        <AppText variant="caption" tone="secondary" numberOfLines={1}>{official ? `N.º ${official.student.studentNumber} · ${official.student.curricularYear ? `${official.student.curricularYear}.º ano` : 'ano não indicado'}` : 'Engenharia Informática · exemplo'}</AppText>
+        <AppText variant="caption" tone="secondary" numberOfLines={1}>{official ? [official.student.studentNumber && `N.º ${official.student.studentNumber}`, official.student.curricularYear && `${official.student.curricularYear}.º ano`].filter(Boolean).join(' · ') || 'Dados académicos do backend' : 'Engenharia Informática · exemplo'}</AppText>
         <AppText variant="caption" tone="accent">{official ? 'PERFIL OFICIAL DO BACKEND' : exampleName ? 'IDENTIDADE DE EXEMPLO' : 'AUTOAVALIAÇÃO LOCAL'}</AppText>
       </View>
       <View style={styles.overall}>
@@ -83,7 +84,7 @@ export default function Competencies() {
             <AppText variant="caption">Notas · {Math.round(profile.academicWeight * 100)}%</AppText>
           </View>
         </View>
-        <AppText variant="caption" tone="secondary">O peso das notas aumenta à medida que concluis unidades curriculares avaliadas.</AppText>
+        <AppText variant="caption" tone="secondary">Ponderação calculada pelo backend.</AppText>
         {profile.unknownCompetencies.length > 0 && <AppText variant="caption" tone="secondary">{profile.unknownCompetencies.length} áreas ainda sem dados.</AppText>}
       </> : <>
         <AppText variant="label" tone="accent">Autoavaliação local</AppText>

@@ -1,59 +1,78 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
 import { AppText } from '@/components/AppText';
-import { SegmentedControl } from '@/components/SegmentedControl';
 import { useDemoSession } from '@/features/student/DemoSession';
 import { demoStudent } from '@/features/student/data';
+import { gradeSummary } from '@/features/student/academicGrades';
 import { OfficialDataStatus } from '@/features/student/OfficialDataStatus';
 import { StudentIcon } from '@/features/student/StudentIcon';
 import { StudentPage, studentStyles } from '@/features/student/StudentPage';
-import { useTheme, type ThemePreference } from '@/theme/ThemeProvider';
+import { useTheme } from '@/theme/ThemeProvider';
 import { dimensions, radius, spacing } from '@/theme/tokens';
-
-const themes = [{ label: 'Sistema', value: 'system' }, { label: 'Claro', value: 'light' }, { label: 'Escuro', value: 'dark' }] as const;
 
 export default function Profile() {
   const router = useRouter();
-  const { colors, preference, setPreference } = useTheme();
-  const { setStudentActive, record, goToStep, official } = useDemoSession();
-  return (
-    <StudentPage title="Perfil" subtitle={official ? 'Dados do aluno demonstrativo carregados do backend.' : 'Uma identidade de exemplo para explorares o StudyMatch.'}>
-      <OfficialDataStatus />
-      <View style={studentStyles.row}>
-        <View style={[styles.avatar, { backgroundColor: colors.surfaceRaised }]}><StudentIcon name="profile" color={colors.accentText} /></View>
-        <View style={[studentStyles.copy, studentStyles.flex]}>
-          <AppText variant="heading">{official?.student.name ?? demoStudent.name}</AppText>
-          <AppText variant="caption" tone="secondary">{official ? official.student.email : demoStudent.course}</AppText>
-          <AppText variant="caption" tone="secondary">{official ? (official.student.curricularYear ? `${official.student.curricularYear}.º ano` : 'Ano curricular não indicado') : demoStudent.year}</AppText>
-        </View>
+  const { colors, resolvedTheme, setPreference } = useTheme();
+  const { setStudentActive, record, goToStep, official, identity } = useDemoSession();
+  const student = official?.student;
+  const name = student?.name ?? identity?.name ?? demoStudent.name;
+  const year = student
+    ? student.curricularYear ? `${student.curricularYear}.º ano` : 'Ano curricular não indicado'
+    : identity?.curricularYear ? `${identity.curricularYear}.º ano` : demoStudent.year;
+  const average = official ? gradeSummary(official.enrollments) : null;
+
+  return <StudentPage title="Perfil" compactHeader>
+    <OfficialDataStatus />
+    <View style={studentStyles.row}>
+      <View style={[styles.avatar, { backgroundColor: colors.surfaceRaised }]}><StudentIcon name="profile" color={colors.accentText} /></View>
+      <View style={[studentStyles.copy, studentStyles.flex]}>
+        <AppText variant="heading">{name}</AppText>
+        <AppText variant="caption" tone="secondary">{student ? 'Aluno de teste · dados do backend' : `${demoStudent.course} · exemplo`}</AppText>
+        <AppText variant="caption" tone="secondary">{year}</AppText>
       </View>
-      <AppCard style={studentStyles.stack}>
-        <AppText variant="label" accessibilityRole="header">Informação pessoal</AppText>
+    </View>
+    <AppCard style={styles.card}>
+      <AppText variant="label" accessibilityRole="header">Informação pessoal</AppText>
+      <View style={styles.detailRow}>
+        <AppText variant="caption" tone="secondary">Email</AppText>
+        <AppText variant="label" selectable>{student?.email ?? identity?.email ?? 'Não indicado'}</AppText>
+      </View>
+      <View style={styles.detailRow}>
+        <AppText variant="caption" tone="secondary">Número de aluno</AppText>
+        <AppText variant="label">{student ? student.studentNumber ?? 'Não indicado' : identity?.studentNumber ? `${identity.studentNumber} · demonstração` : identity ? 'Não indicado' : `${demoStudent.number} · exemplo`}</AppText>
+      </View>
+    </AppCard>
+    <AppCard style={styles.card}>
+      <AppText variant="label" accessibilityRole="header">Percurso académico</AppText>
+      <AppText variant="caption" tone="secondary">{official
+        ? `${average?.count ?? 0} ${(average?.count ?? 0) === 1 ? 'cadeira avaliada' : 'cadeiras avaliadas'} · ${Object.keys(official.questionnaire.answers).length} de 6 áreas do questionário`
+        : record.completed ? 'Autoavaliação local concluída · 18 respostas' : 'Questionário por concluir'}</AppText>
+      <View style={styles.actions}>
+        <AppButton title="Competências" size="sm" variant="secondary" style={styles.action} onPress={() => router.push('/student/competencies')} />
+        <AppButton title="Notas" size="sm" variant="secondary" style={styles.action} onPress={() => router.push('/student/grades')} />
+      </View>
+      {!official && <AppButton title="Rever questionário" size="sm" variant="outline" onPress={() => { goToStep(0); router.push('/student/questionnaire'); }} />}
+    </AppCard>
+    <AppCard style={styles.themeCard}>
+      <View style={[studentStyles.spread, studentStyles.flex]}>
         <View style={studentStyles.copy}>
-          <AppText variant="caption" tone="secondary">{official ? 'Número de aluno' : 'Número de aluno · Exemplo'}</AppText>
-          <AppText variant="label">{official?.student.studentNumber ?? demoStudent.number}</AppText>
+          <AppText variant="label">Modo escuro</AppText>
+          <AppText variant="caption" tone="secondary">Preferência guardada neste dispositivo</AppText>
         </View>
-        <AppText variant="caption" tone="secondary">{official ? 'Aluno de teste. Estes dados são lidos do backend; esta sessão não autentica uma conta.' : 'Estes dados são fictícios. A edição do perfil estará disponível numa próxima fase.'}</AppText>
-      </AppCard>
-      {official ? <AppCard style={studentStyles.stack}>
-        <AppText variant="label" accessibilityRole="header">Dados académicos disponíveis</AppText>
-        <AppText variant="caption" tone="secondary">{official.enrollments.length} inscrições · {official.enrollments.filter((item) => item.grade !== null).length} registos com nota. O ecrã de Notas será desenvolvido numa etapa própria.</AppText>
-        <AppText variant="caption" tone="secondary">Questionário oficial: {Object.keys(official.questionnaire.answers).length} de 6 áreas respondidas.</AppText>
-      </AppCard> : <AppCard style={studentStyles.stack}>
-        <AppText variant="label" accessibilityRole="header">Questionário de competências</AppText>
-        <AppText variant="caption" tone="secondary">{record.completed ? '18 de 18 respostas guardadas neste dispositivo.' : 'Questionário por concluir.'} Esta é uma autoavaliação local de demonstração.</AppText>
-        <AppButton title="Rever ou refazer respostas" variant="secondary" onPress={() => { goToStep(0); router.push('/student/questionnaire'); }} />
-      </AppCard>}
-      <AppCard style={studentStyles.stack}>
-        <AppText variant="label" accessibilityRole="header">Aparência</AppText>
-        <SegmentedControl<ThemePreference> label="Tema da aplicação" options={themes} value={preference} onChange={setPreference} />
-        <AppText variant="caption" tone="secondary">A preferência de tema é guardada neste dispositivo.</AppText>
-      </AppCard>
-      <AppButton title={official ? 'Voltar aos alunos de teste' : 'Terminar sessão demonstrativa'} variant="outline" onPress={() => setStudentActive(false)} />
-    </StudentPage>
-  );
+        <Switch accessibilityLabel="Modo escuro" accessibilityRole="switch" value={resolvedTheme === 'dark'} onValueChange={(value) => setPreference(value ? 'dark' : 'light')} trackColor={{ false: colors.track, true: colors.primary }} thumbColor={colors.onPrimary} />
+      </View>
+    </AppCard>
+    <AppButton title={official ? 'Trocar aluno de teste' : 'Terminar sessão demonstrativa'} variant="outline" size="sm" onPress={() => setStudentActive(false)} />
+  </StudentPage>;
 }
 
-const styles = StyleSheet.create({ avatar: { width: dimensions.controlMd, height: dimensions.controlMd, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', marginVertical: spacing.xs } });
+const styles = StyleSheet.create({
+  avatar: { width: dimensions.controlMd, height: dimensions.controlMd, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  card: { gap: spacing.sm },
+  detailRow: { gap: spacing.xxs },
+  actions: { flexDirection: 'row', gap: spacing.sm },
+  action: { flex: 1, minWidth: 0, paddingHorizontal: spacing.xs },
+  themeCard: { paddingVertical: spacing.sm },
+});

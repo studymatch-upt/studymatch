@@ -61,8 +61,8 @@ export default function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  demoPage: { flexGrow: 1, gap: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.xl },
-  demoContent: { flex: 1, justifyContent: 'center', gap: spacing.lg },
+  demoPage: { flexGrow: 1, gap: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.xl },
+  demoContent: { flex: 1, justifyContent: 'center', gap: spacing.md },
   demoCopy: { gap: spacing.xs },
   page: { flexGrow: 1, justifyContent: 'space-between', paddingTop: spacing.sm, paddingBottom: spacing.xl },
   hero: { alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.xl },
