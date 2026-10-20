@@ -1,0 +1,3186 @@
+StudyMatch API smoke test
+date:     2026-10-19T12:12:54+01:00
+base url: http://localhost:8080
+Every call lists the expected HTTP status; PASS/FAIL compares it with the real one.
+
+
+################################################################################
+# USERS  GET /api/users
+################################################################################
+--------------------------------------------------------------------------------
+[PASS] #1  list teachers
+curl -X GET 'http://localhost:8080/api/users?role=TEACHER'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 1,
+        "name": "Ana Teacher",
+        "email": "ana.teacher@school.test",
+        "role": "TEACHER"
+    },
+    {
+        "id": 2,
+        "name": "Bruno Teacher",
+        "email": "bruno.teacher@school.test",
+        "role": "TEACHER"
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #2  list students
+curl -X GET 'http://localhost:8080/api/users?role=STUDENT'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 3,
+        "name": "Carla Mendes",
+        "email": "carla@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 4,
+        "name": "Diogo Ferreira",
+        "email": "diogo@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 5,
+        "name": "Eva Costa",
+        "email": "eva@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 6,
+        "name": "Filipe Santos",
+        "email": "filipe@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 7,
+        "name": "Gabriela Rocha",
+        "email": "gabriela@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 8,
+        "name": "Hugo Almeida",
+        "email": "hugo@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 9,
+        "name": "Inês Carvalho",
+        "email": "ines@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 10,
+        "name": "João Pereira",
+        "email": "joao@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 11,
+        "name": "Leonor Sousa",
+        "email": "leonor@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 12,
+        "name": "Miguel Oliveira",
+        "email": "miguel@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 13,
+        "name": "Nuno Ribeiro",
+        "email": "nuno@school.test",
+        "role": "STUDENT"
+    },
+    {
+        "id": 14,
+        "name": "Rita Gomes",
+        "email": "rita@school.test",
+        "role": "STUDENT"
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #3  unknown role value
+curl -X GET 'http://localhost:8080/api/users?role=ADMIN'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:54.371Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/users"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #4  missing role parameter
+curl -X GET 'http://localhost:8080/api/users'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:54.407Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/users"
+}
+
+
+
+################################################################################
+# PROJECTS  POST/GET /api/projects
+################################################################################
+--------------------------------------------------------------------------------
+[PASS] #5  create project: 10 students, size 3 (expect groups 3/3/2/2)
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"Software Quality","description":"smoke test","groupSize":3,"teacherId":1,"studentIds":[3,4,5,6,7,8,9,10,11,12]}'
+expected HTTP 201, got HTTP 201
+Location: /api/projects/1
+response:
+{
+    "id": 1,
+    "name": "Software Quality",
+    "description": "smoke test",
+    "groupSize": 3,
+    "teacher": {
+        "id": 1,
+        "name": "Ana Teacher",
+        "email": "ana.teacher@school.test",
+        "role": "TEACHER"
+    },
+    "createdAt": "2026-10-19T11:12:54.499494733Z",
+    "groups": [
+        {
+            "id": 1,
+            "number": 1,
+            "name": "Group 1",
+            "members": [
+                {
+                    "id": 3,
+                    "name": "Carla Mendes",
+                    "email": "carla@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 7,
+                    "name": "Gabriela Rocha",
+                    "email": "gabriela@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 11,
+                    "name": "Leonor Sousa",
+                    "email": "leonor@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "number": 2,
+            "name": "Group 2",
+            "members": [
+                {
+                    "id": 4,
+                    "name": "Diogo Ferreira",
+                    "email": "diogo@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 8,
+                    "name": "Hugo Almeida",
+                    "email": "hugo@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 12,
+                    "name": "Miguel Oliveira",
+                    "email": "miguel@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "number": 3,
+            "name": "Group 3",
+            "members": [
+                {
+                    "id": 5,
+                    "name": "Eva Costa",
+                    "email": "eva@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 9,
+                    "name": "Inês Carvalho",
+                    "email": "ines@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "number": 4,
+            "name": "Group 4",
+            "members": [
+                {
+                    "id": 6,
+                    "name": "Filipe Santos",
+                    "email": "filipe@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 10,
+                    "name": "João Pereira",
+                    "email": "joao@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        }
+    ]
+}
+
+--------------------------------------------------------------------------------
+[PASS] #6  create project: no description
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"No description","groupSize":2,"teacherId":1,"studentIds":[3,4,5]}'
+expected HTTP 201, got HTTP 201
+Location: /api/projects/2
+response:
+{
+    "id": 2,
+    "name": "No description",
+    "description": null,
+    "groupSize": 2,
+    "teacher": {
+        "id": 1,
+        "name": "Ana Teacher",
+        "email": "ana.teacher@school.test",
+        "role": "TEACHER"
+    },
+    "createdAt": "2026-10-19T11:12:54.572117661Z",
+    "groups": [
+        {
+            "id": 5,
+            "number": 1,
+            "name": "Group 1",
+            "members": [
+                {
+                    "id": 3,
+                    "name": "Carla Mendes",
+                    "email": "carla@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 5,
+                    "name": "Eva Costa",
+                    "email": "eva@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "number": 2,
+            "name": "Group 2",
+            "members": [
+                {
+                    "id": 4,
+                    "name": "Diogo Ferreira",
+                    "email": "diogo@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        }
+    ]
+}
+
+--------------------------------------------------------------------------------
+[PASS] #7  create project: group size 1
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"Solo","groupSize":1,"teacherId":1,"studentIds":[3,4]}'
+expected HTTP 201, got HTTP 201
+Location: /api/projects/3
+response:
+{
+    "id": 3,
+    "name": "Solo",
+    "description": null,
+    "groupSize": 1,
+    "teacher": {
+        "id": 1,
+        "name": "Ana Teacher",
+        "email": "ana.teacher@school.test",
+        "role": "TEACHER"
+    },
+    "createdAt": "2026-10-19T11:12:54.616530493Z",
+    "groups": [
+        {
+            "id": 7,
+            "number": 1,
+            "name": "Group 1",
+            "members": [
+                {
+                    "id": 3,
+                    "name": "Carla Mendes",
+                    "email": "carla@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "number": 2,
+            "name": "Group 2",
+            "members": [
+                {
+                    "id": 4,
+                    "name": "Diogo Ferreira",
+                    "email": "diogo@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        }
+    ]
+}
+
+--------------------------------------------------------------------------------
+[PASS] #8  create project: size larger than selection (one group)
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"Big groups","groupSize":50,"teacherId":2,"studentIds":[3,4,5]}'
+expected HTTP 201, got HTTP 201
+Location: /api/projects/4
+response:
+{
+    "id": 4,
+    "name": "Big groups",
+    "description": null,
+    "groupSize": 50,
+    "teacher": {
+        "id": 2,
+        "name": "Bruno Teacher",
+        "email": "bruno.teacher@school.test",
+        "role": "TEACHER"
+    },
+    "createdAt": "2026-10-19T11:12:54.660950752Z",
+    "groups": [
+        {
+            "id": 9,
+            "number": 1,
+            "name": "Group 1",
+            "members": [
+                {
+                    "id": 3,
+                    "name": "Carla Mendes",
+                    "email": "carla@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 4,
+                    "name": "Diogo Ferreira",
+                    "email": "diogo@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 5,
+                    "name": "Eva Costa",
+                    "email": "eva@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        }
+    ]
+}
+
+--------------------------------------------------------------------------------
+[PASS] #9  create project: blank name
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"   ","groupSize":3,"teacherId":1,"studentIds":[3,4,5]}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/projects",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "name": "must not be blank"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #10  create project: group size 0
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":0,"teacherId":1,"studentIds":[3,4,5]}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/projects",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "groupSize": "must be greater than or equal to 1"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #11  create project: group size 51
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":51,"teacherId":1,"studentIds":[3,4,5]}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/projects",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "groupSize": "must be less than or equal to 50"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #12  create project: missing teacherId
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":3,"studentIds":[3,4,5]}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/projects",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "teacherId": "must not be null"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #13  create project: empty student list
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":3,"teacherId":1,"studentIds":[]}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/projects",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "studentIds": "must not be empty"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #14  create project: unknown teacher
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":3,"teacherId":999999,"studentIds":[3,4,5]}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "User 999999 not found",
+    "instance": "/api/projects",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #15  create project: creator is a student
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":3,"teacherId":3,"studentIds":[4,5,6]}'
+expected HTTP 422, got HTTP 422
+response:
+{
+    "detail": "Only teachers can create projects",
+    "instance": "/api/projects",
+    "status": 422,
+    "title": "Request not allowed"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #16  create project: unknown student
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":3,"teacherId":1,"studentIds":[3,4,999999]}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Students [999999] not found",
+    "instance": "/api/projects",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #17  create project: teacher among students
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":3,"teacherId":1,"studentIds":[3,4,2]}'
+expected HTTP 422, got HTTP 422
+response:
+{
+    "detail": "These users are not students: [2]",
+    "instance": "/api/projects",
+    "status": 422,
+    "title": "Request not allowed"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #18  create project: same student twice
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":"X","groupSize":3,"teacherId":1,"studentIds":[3,3,4]}'
+expected HTTP 422, got HTTP 422
+response:
+{
+    "detail": "The same student was selected more than once",
+    "instance": "/api/projects",
+    "status": 422,
+    "title": "Request not allowed"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #19  create project: malformed JSON
+curl -X POST 'http://localhost:8080/api/projects' -H 'Content-Type: application/json' -d '{"name":'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:55.067Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/projects"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #20  list projects of Ana
+curl -X GET 'http://localhost:8080/api/projects?teacherId=1'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 3,
+        "name": "Solo",
+        "groupSize": 1,
+        "groupCount": 2,
+        "studentCount": 2,
+        "createdAt": "2026-10-19T11:12:54.616530Z"
+    },
+    {
+        "id": 2,
+        "name": "No description",
+        "groupSize": 2,
+        "groupCount": 2,
+        "studentCount": 3,
+        "createdAt": "2026-10-19T11:12:54.572118Z"
+    },
+    {
+        "id": 1,
+        "name": "Software Quality",
+        "groupSize": 3,
+        "groupCount": 4,
+        "studentCount": 10,
+        "createdAt": "2026-10-19T11:12:54.499495Z"
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #21  list projects of Bruno
+curl -X GET 'http://localhost:8080/api/projects?teacherId=2'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 4,
+        "name": "Big groups",
+        "groupSize": 50,
+        "groupCount": 1,
+        "studentCount": 3,
+        "createdAt": "2026-10-19T11:12:54.660951Z"
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #22  list projects of unknown teacher (empty)
+curl -X GET 'http://localhost:8080/api/projects?teacherId=999999'
+expected HTTP 200, got HTTP 200
+response:
+[]
+
+--------------------------------------------------------------------------------
+[PASS] #23  list projects: missing teacherId
+curl -X GET 'http://localhost:8080/api/projects'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:55.230Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/projects"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #24  get project
+curl -X GET 'http://localhost:8080/api/projects/1'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "id": 1,
+    "name": "Software Quality",
+    "description": "smoke test",
+    "groupSize": 3,
+    "teacher": {
+        "id": 1,
+        "name": "Ana Teacher",
+        "email": "ana.teacher@school.test",
+        "role": "TEACHER"
+    },
+    "createdAt": "2026-10-19T11:12:54.499495Z",
+    "groups": [
+        {
+            "id": 1,
+            "number": 1,
+            "name": "Group 1",
+            "members": [
+                {
+                    "id": 3,
+                    "name": "Carla Mendes",
+                    "email": "carla@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 7,
+                    "name": "Gabriela Rocha",
+                    "email": "gabriela@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 11,
+                    "name": "Leonor Sousa",
+                    "email": "leonor@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "number": 2,
+            "name": "Group 2",
+            "members": [
+                {
+                    "id": 4,
+                    "name": "Diogo Ferreira",
+                    "email": "diogo@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 8,
+                    "name": "Hugo Almeida",
+                    "email": "hugo@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 12,
+                    "name": "Miguel Oliveira",
+                    "email": "miguel@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "number": 3,
+            "name": "Group 3",
+            "members": [
+                {
+                    "id": 5,
+                    "name": "Eva Costa",
+                    "email": "eva@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 9,
+                    "name": "Inês Carvalho",
+                    "email": "ines@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "number": 4,
+            "name": "Group 4",
+            "members": [
+                {
+                    "id": 6,
+                    "name": "Filipe Santos",
+                    "email": "filipe@school.test",
+                    "role": "STUDENT"
+                },
+                {
+                    "id": 10,
+                    "name": "João Pereira",
+                    "email": "joao@school.test",
+                    "role": "STUDENT"
+                }
+            ]
+        }
+    ]
+}
+
+--------------------------------------------------------------------------------
+[PASS] #25  get unknown project
+curl -X GET 'http://localhost:8080/api/projects/999999'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Project 999999 not found",
+    "instance": "/api/projects/999999",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #26  get project: non-numeric id
+curl -X GET 'http://localhost:8080/api/projects/abc'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:55.346Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/projects/abc"
+}
+
+
+
+################################################################################
+# STUDENTS (2.1)  /api/students
+################################################################################
+--------------------------------------------------------------------------------
+[PASS] #27  create student
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Script Student","email":"script.student@school.test","studentNumber":"A90001","curricularYear":2}'
+expected HTTP 201, got HTTP 201
+Location: /api/students/15
+response:
+{
+    "id": 15,
+    "name": "Script Student",
+    "email": "script.student@school.test",
+    "studentNumber": "A90001",
+    "curricularYear": 2
+}
+
+--------------------------------------------------------------------------------
+[PASS] #28  create second student
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Second Student","email":"second.student@school.test","studentNumber":"A90002","curricularYear":3}'
+expected HTTP 201, got HTTP 201
+Location: /api/students/16
+response:
+{
+    "id": 16,
+    "name": "Second Student",
+    "email": "second.student@school.test",
+    "studentNumber": "A90002",
+    "curricularYear": 3
+}
+
+--------------------------------------------------------------------------------
+[PASS] #29  create student: duplicate email in other case (emails are normalised)
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Dup","email":"SCRIPT.STUDENT@school.test","studentNumber":"A90003","curricularYear":2}'
+expected HTTP 409, got HTTP 409
+response:
+{
+    "detail": "A user with email script.student@school.test already exists",
+    "instance": "/api/students",
+    "status": 409,
+    "title": "Already exists"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #30  create student: duplicate email
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Dup","email":"script.student@school.test","studentNumber":"A90003","curricularYear":2}'
+expected HTTP 409, got HTTP 409
+response:
+{
+    "detail": "A user with email script.student@school.test already exists",
+    "instance": "/api/students",
+    "status": 409,
+    "title": "Already exists"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #31  create student: duplicate student number
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Dup","email":"dup@school.test","studentNumber":"A90001","curricularYear":2}'
+expected HTTP 409, got HTTP 409
+response:
+{
+    "detail": "Student number A90001 is already in use",
+    "instance": "/api/students",
+    "status": 409,
+    "title": "Already exists"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #32  create student: invalid email
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Bad","email":"not-an-email","studentNumber":"A90004","curricularYear":2}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "email": "must be a well-formed email address"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #33  create student: blank name
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"","email":"blank@school.test","studentNumber":"A90005","curricularYear":2}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "name": "must not be blank"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #34  create student: invalid student number
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Bad","email":"bad.number@school.test","studentNumber":"bad number!","curricularYear":2}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "studentNumber": "must be 1-20 letters or digits"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #35  create student: curricular year 0
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Bad","email":"year0@school.test","studentNumber":"A90006","curricularYear":0}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "curricularYear": "must be greater than or equal to 1"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #36  create student: curricular year 6
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{"name":"Bad","email":"year6@school.test","studentNumber":"A90007","curricularYear":6}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "curricularYear": "must be less than or equal to 5"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #37  create student: missing fields
+curl -X POST 'http://localhost:8080/api/students' -H 'Content-Type: application/json' -d '{}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "studentNumber": "must not be blank",
+        "name": "must not be blank",
+        "email": "must not be blank",
+        "curricularYear": "must not be null"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #38  list students (default order)
+curl -X GET 'http://localhost:8080/api/students'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 3,
+        "name": "Carla Mendes",
+        "email": "carla@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 4,
+        "name": "Diogo Ferreira",
+        "email": "diogo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 5,
+        "name": "Eva Costa",
+        "email": "eva@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 6,
+        "name": "Filipe Santos",
+        "email": "filipe@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 7,
+        "name": "Gabriela Rocha",
+        "email": "gabriela@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 8,
+        "name": "Hugo Almeida",
+        "email": "hugo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 9,
+        "name": "Inês Carvalho",
+        "email": "ines@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 10,
+        "name": "João Pereira",
+        "email": "joao@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 11,
+        "name": "Leonor Sousa",
+        "email": "leonor@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 12,
+        "name": "Miguel Oliveira",
+        "email": "miguel@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 13,
+        "name": "Nuno Ribeiro",
+        "email": "nuno@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 14,
+        "name": "Rita Gomes",
+        "email": "rita@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 15,
+        "name": "Script Student",
+        "email": "script.student@school.test",
+        "studentNumber": "A90001",
+        "curricularYear": 2
+    },
+    {
+        "id": 16,
+        "name": "Second Student",
+        "email": "second.student@school.test",
+        "studentNumber": "A90002",
+        "curricularYear": 3
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #39  list students: search by name
+curl -X GET 'http://localhost:8080/api/students?search=carla'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 3,
+        "name": "Carla Mendes",
+        "email": "carla@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #40  list students: search by email
+curl -X GET 'http://localhost:8080/api/students?search=second.student'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 16,
+        "name": "Second Student",
+        "email": "second.student@school.test",
+        "studentNumber": "A90002",
+        "curricularYear": 3
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #41  list students: search by number
+curl -X GET 'http://localhost:8080/api/students?search=A9000'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 15,
+        "name": "Script Student",
+        "email": "script.student@school.test",
+        "studentNumber": "A90001",
+        "curricularYear": 2
+    },
+    {
+        "id": 16,
+        "name": "Second Student",
+        "email": "second.student@school.test",
+        "studentNumber": "A90002",
+        "curricularYear": 3
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #42  list students: search, no match
+curl -X GET 'http://localhost:8080/api/students?search=zzzzzz'
+expected HTTP 200, got HTTP 200
+response:
+[]
+
+--------------------------------------------------------------------------------
+[PASS] #43  list students: filter year 2
+curl -X GET 'http://localhost:8080/api/students?curricularYear=2'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 15,
+        "name": "Script Student",
+        "email": "script.student@school.test",
+        "studentNumber": "A90001",
+        "curricularYear": 2
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #44  list students: sort name desc
+curl -X GET 'http://localhost:8080/api/students?sortBy=name&direction=desc'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 16,
+        "name": "Second Student",
+        "email": "second.student@school.test",
+        "studentNumber": "A90002",
+        "curricularYear": 3
+    },
+    {
+        "id": 15,
+        "name": "Script Student",
+        "email": "script.student@school.test",
+        "studentNumber": "A90001",
+        "curricularYear": 2
+    },
+    {
+        "id": 14,
+        "name": "Rita Gomes",
+        "email": "rita@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 13,
+        "name": "Nuno Ribeiro",
+        "email": "nuno@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 12,
+        "name": "Miguel Oliveira",
+        "email": "miguel@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 11,
+        "name": "Leonor Sousa",
+        "email": "leonor@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 10,
+        "name": "João Pereira",
+        "email": "joao@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 9,
+        "name": "Inês Carvalho",
+        "email": "ines@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 8,
+        "name": "Hugo Almeida",
+        "email": "hugo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 7,
+        "name": "Gabriela Rocha",
+        "email": "gabriela@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 6,
+        "name": "Filipe Santos",
+        "email": "filipe@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 5,
+        "name": "Eva Costa",
+        "email": "eva@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 4,
+        "name": "Diogo Ferreira",
+        "email": "diogo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 3,
+        "name": "Carla Mendes",
+        "email": "carla@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #45  list students: sort email asc
+curl -X GET 'http://localhost:8080/api/students?sortBy=email&direction=asc'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 3,
+        "name": "Carla Mendes",
+        "email": "carla@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 4,
+        "name": "Diogo Ferreira",
+        "email": "diogo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 5,
+        "name": "Eva Costa",
+        "email": "eva@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 6,
+        "name": "Filipe Santos",
+        "email": "filipe@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 7,
+        "name": "Gabriela Rocha",
+        "email": "gabriela@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 8,
+        "name": "Hugo Almeida",
+        "email": "hugo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 9,
+        "name": "Inês Carvalho",
+        "email": "ines@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 10,
+        "name": "João Pereira",
+        "email": "joao@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 11,
+        "name": "Leonor Sousa",
+        "email": "leonor@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 12,
+        "name": "Miguel Oliveira",
+        "email": "miguel@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 13,
+        "name": "Nuno Ribeiro",
+        "email": "nuno@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 14,
+        "name": "Rita Gomes",
+        "email": "rita@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 15,
+        "name": "Script Student",
+        "email": "script.student@school.test",
+        "studentNumber": "A90001",
+        "curricularYear": 2
+    },
+    {
+        "id": 16,
+        "name": "Second Student",
+        "email": "second.student@school.test",
+        "studentNumber": "A90002",
+        "curricularYear": 3
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #46  list students: sort studentNumber desc
+curl -X GET 'http://localhost:8080/api/students?sortBy=studentNumber&direction=desc'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 16,
+        "name": "Second Student",
+        "email": "second.student@school.test",
+        "studentNumber": "A90002",
+        "curricularYear": 3
+    },
+    {
+        "id": 15,
+        "name": "Script Student",
+        "email": "script.student@school.test",
+        "studentNumber": "A90001",
+        "curricularYear": 2
+    },
+    {
+        "id": 3,
+        "name": "Carla Mendes",
+        "email": "carla@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 4,
+        "name": "Diogo Ferreira",
+        "email": "diogo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 5,
+        "name": "Eva Costa",
+        "email": "eva@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 6,
+        "name": "Filipe Santos",
+        "email": "filipe@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 7,
+        "name": "Gabriela Rocha",
+        "email": "gabriela@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 8,
+        "name": "Hugo Almeida",
+        "email": "hugo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 9,
+        "name": "Inês Carvalho",
+        "email": "ines@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 10,
+        "name": "João Pereira",
+        "email": "joao@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 11,
+        "name": "Leonor Sousa",
+        "email": "leonor@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 12,
+        "name": "Miguel Oliveira",
+        "email": "miguel@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 13,
+        "name": "Nuno Ribeiro",
+        "email": "nuno@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 14,
+        "name": "Rita Gomes",
+        "email": "rita@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #47  list students: sort curricularYear asc
+curl -X GET 'http://localhost:8080/api/students?sortBy=curricularYear&direction=asc'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 3,
+        "name": "Carla Mendes",
+        "email": "carla@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 4,
+        "name": "Diogo Ferreira",
+        "email": "diogo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 5,
+        "name": "Eva Costa",
+        "email": "eva@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 6,
+        "name": "Filipe Santos",
+        "email": "filipe@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 7,
+        "name": "Gabriela Rocha",
+        "email": "gabriela@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 8,
+        "name": "Hugo Almeida",
+        "email": "hugo@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 9,
+        "name": "Inês Carvalho",
+        "email": "ines@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 10,
+        "name": "João Pereira",
+        "email": "joao@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 11,
+        "name": "Leonor Sousa",
+        "email": "leonor@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 12,
+        "name": "Miguel Oliveira",
+        "email": "miguel@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 13,
+        "name": "Nuno Ribeiro",
+        "email": "nuno@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 14,
+        "name": "Rita Gomes",
+        "email": "rita@school.test",
+        "studentNumber": null,
+        "curricularYear": null
+    },
+    {
+        "id": 15,
+        "name": "Script Student",
+        "email": "script.student@school.test",
+        "studentNumber": "A90001",
+        "curricularYear": 2
+    },
+    {
+        "id": 16,
+        "name": "Second Student",
+        "email": "second.student@school.test",
+        "studentNumber": "A90002",
+        "curricularYear": 3
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #48  list students: search + year + sort
+curl -X GET 'http://localhost:8080/api/students?search=student&curricularYear=3&sortBy=name&direction=asc'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 16,
+        "name": "Second Student",
+        "email": "second.student@school.test",
+        "studentNumber": "A90002",
+        "curricularYear": 3
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #49  list students: unknown sort field
+curl -X GET 'http://localhost:8080/api/students?sortBy=password'
+expected HTTP 422, got HTTP 422
+response:
+{
+    "detail": "Cannot sort by 'password'. Use one of: [studentNumber, email, name, curricularYear]",
+    "instance": "/api/students",
+    "status": 422,
+    "title": "Request not allowed"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #50  list students: unknown direction
+curl -X GET 'http://localhost:8080/api/students?direction=sideways'
+expected HTTP 422, got HTTP 422
+response:
+{
+    "detail": "direction must be 'asc' or 'desc'",
+    "instance": "/api/students",
+    "status": 422,
+    "title": "Request not allowed"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #51  list students: curricularYear 0
+curl -X GET 'http://localhost:8080/api/students?curricularYear=0'
+expected HTTP 422, got HTTP 422
+response:
+{
+    "detail": "curricularYear must be at least 1",
+    "instance": "/api/students",
+    "status": 422,
+    "title": "Request not allowed"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #52  list students: curricularYear -1
+curl -X GET 'http://localhost:8080/api/students?curricularYear=-1'
+expected HTTP 422, got HTTP 422
+response:
+{
+    "detail": "curricularYear must be at least 1",
+    "instance": "/api/students",
+    "status": 422,
+    "title": "Request not allowed"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #53  list students: curricularYear text
+curl -X GET 'http://localhost:8080/api/students?curricularYear=abc'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:56.337Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/students"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #54  get student
+curl -X GET 'http://localhost:8080/api/students/15'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "id": 15,
+    "name": "Script Student",
+    "email": "script.student@school.test",
+    "studentNumber": "A90001",
+    "curricularYear": 2
+}
+
+--------------------------------------------------------------------------------
+[PASS] #55  get unknown student
+curl -X GET 'http://localhost:8080/api/students/999999'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 999999 not found",
+    "instance": "/api/students/999999",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #56  get student: id of a teacher
+curl -X GET 'http://localhost:8080/api/students/1'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 1 not found",
+    "instance": "/api/students/1",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #57  get student: non-numeric id
+curl -X GET 'http://localhost:8080/api/students/abc'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:56.481Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/students/abc"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #58  update student
+curl -X PUT 'http://localhost:8080/api/students/15' -H 'Content-Type: application/json' -d '{"name":"Script Student Renamed","email":"script.student@school.test","studentNumber":"A90001","curricularYear":3}'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "id": 15,
+    "name": "Script Student Renamed",
+    "email": "script.student@school.test",
+    "studentNumber": "A90001",
+    "curricularYear": 3
+}
+
+--------------------------------------------------------------------------------
+[PASS] #59  update student: keep own email and number (not a duplicate of itself)
+curl -X PUT 'http://localhost:8080/api/students/15' -H 'Content-Type: application/json' -d '{"name":"Script Student Renamed","email":"script.student@school.test","studentNumber":"A90001","curricularYear":3}'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "id": 15,
+    "name": "Script Student Renamed",
+    "email": "script.student@school.test",
+    "studentNumber": "A90001",
+    "curricularYear": 3
+}
+
+--------------------------------------------------------------------------------
+[PASS] #60  update student: email of another student
+curl -X PUT 'http://localhost:8080/api/students/15' -H 'Content-Type: application/json' -d '{"name":"X","email":"second.student@school.test","studentNumber":"A90001","curricularYear":3}'
+expected HTTP 409, got HTTP 409
+response:
+{
+    "detail": "A user with email second.student@school.test already exists",
+    "instance": "/api/students/15",
+    "status": 409,
+    "title": "Already exists"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #61  update student: number of another student
+curl -X PUT 'http://localhost:8080/api/students/15' -H 'Content-Type: application/json' -d '{"name":"X","email":"script.student@school.test","studentNumber":"A90002","curricularYear":3}'
+expected HTTP 409, got HTTP 409
+response:
+{
+    "detail": "Student number A90002 is already in use",
+    "instance": "/api/students/15",
+    "status": 409,
+    "title": "Already exists"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #62  update student: invalid body
+curl -X PUT 'http://localhost:8080/api/students/15' -H 'Content-Type: application/json' -d '{"name":"","email":"nope","studentNumber":"","curricularYear":9}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "name": "must not be blank",
+        "email": "must be a well-formed email address",
+        "studentNumber": "must not be blank",
+        "curricularYear": "must be less than or equal to 5"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #63  update unknown student
+curl -X PUT 'http://localhost:8080/api/students/999999' -H 'Content-Type: application/json' -d '{"name":"X","email":"x@school.test","studentNumber":"A90010","curricularYear":2}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 999999 not found",
+    "instance": "/api/students/999999",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #64  update student: id of a teacher
+curl -X PUT 'http://localhost:8080/api/students/1' -H 'Content-Type: application/json' -d '{"name":"X","email":"x@school.test","studentNumber":"A90010","curricularYear":2}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 1 not found",
+    "instance": "/api/students/1",
+    "status": 404,
+    "title": "Not found"
+}
+
+
+
+################################################################################
+# COURSE UNITS (2.2)  /api/course-units
+################################################################################
+--------------------------------------------------------------------------------
+[PASS] #65  list seeded course units (6)
+curl -X GET 'http://localhost:8080/api/course-units'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 2,
+        "code": "AED",
+        "name": "Algoritmos e Estruturas de Dados",
+        "curricularYear": 1,
+        "semester": 1,
+        "competencyWeights": {
+            "PROGRAMMING": 0.7,
+            "MATHEMATICS_AND_LOGIC": 0.3
+        }
+    },
+    {
+        "id": 1,
+        "code": "AM",
+        "name": "Análise Matemática",
+        "curricularYear": 1,
+        "semester": 1,
+        "competencyWeights": {
+            "MATHEMATICS_AND_LOGIC": 1.0
+        }
+    },
+    {
+        "id": 3,
+        "code": "BD",
+        "name": "Bases de Dados",
+        "curricularYear": 1,
+        "semester": 2,
+        "competencyWeights": {
+            "PROGRAMMING": 0.2,
+            "DATABASES": 0.8
+        }
+    },
+    {
+        "id": 6,
+        "code": "GP",
+        "name": "Gestão de Projetos",
+        "curricularYear": 2,
+        "semester": 1,
+        "competencyWeights": {
+            "COMMUNICATION": 0.4,
+            "ORGANISATION_AND_LEADERSHIP": 0.6
+        }
+    },
+    {
+        "id": 4,
+        "code": "LAM",
+        "name": "Laboratório de Aplicações Móveis",
+        "curricularYear": 2,
+        "semester": 1,
+        "competencyWeights": {
+            "PROGRAMMING": 0.6,
+            "DESIGN_AND_UX": 0.4
+        }
+    },
+    {
+        "id": 5,
+        "code": "QS",
+        "name": "Qualidade de Software",
+        "curricularYear": 2,
+        "semester": 1,
+        "competencyWeights": {
+            "PROGRAMMING": 0.5,
+            "COMMUNICATION": 0.2,
+            "ORGANISATION_AND_LEADERSHIP": 0.3
+        }
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #66  create course unit
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"SCR1","name":"Script Unit One","curricularYear":3,"semester":1,"competencyWeights":{"PROGRAMMING":0.7,"MATHEMATICS_AND_LOGIC":0.3}}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/course-units/7
+response:
+{
+    "id": 7,
+    "code": "SCR1",
+    "name": "Script Unit One",
+    "curricularYear": 3,
+    "semester": 1,
+    "competencyWeights": {
+        "PROGRAMMING": 0.7,
+        "MATHEMATICS_AND_LOGIC": 0.3
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #67  create course unit: lower-case code is stored upper-case
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"scr2","name":"  Script Unit Two  ","curricularYear":2,"semester":2,"competencyWeights":{"DATABASES":1.0}}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/course-units/8
+response:
+{
+    "id": 8,
+    "code": "SCR2",
+    "name": "Script Unit Two",
+    "curricularYear": 2,
+    "semester": 2,
+    "competencyWeights": {
+        "DATABASES": 1.0
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #68  create course unit: weight exactly 1.0 and a tiny weight
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"SCR3","name":"Edge weights","curricularYear":1,"semester":1,"competencyWeights":{"COMMUNICATION":0.01,"DESIGN_AND_UX":1.0}}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/course-units/9
+response:
+{
+    "id": 9,
+    "code": "SCR3",
+    "name": "Edge weights",
+    "curricularYear": 1,
+    "semester": 1,
+    "competencyWeights": {
+        "DESIGN_AND_UX": 1.0,
+        "COMMUNICATION": 0.01
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #69  create course unit: duplicate code (other case)
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"scr1","name":"Dup","curricularYear":1,"semester":1,"competencyWeights":{"PROGRAMMING":1.0}}'
+expected HTTP 409, got HTTP 409
+response:
+{
+    "detail": "Course unit SCR1 already exists",
+    "instance": "/api/course-units",
+    "status": 409,
+    "title": "Already exists"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #70  create course unit: duplicate of a seeded code
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"aed","name":"Dup","curricularYear":1,"semester":1,"competencyWeights":{"PROGRAMMING":1.0}}'
+expected HTTP 409, got HTTP 409
+response:
+{
+    "detail": "Course unit AED already exists",
+    "instance": "/api/course-units",
+    "status": 409,
+    "title": "Already exists"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #71  create course unit: weight above 1
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD1","name":"X","curricularYear":1,"semester":1,"competencyWeights":{"PROGRAMMING":1.5}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "competencyWeights[PROGRAMMING]": "must be less than or equal to 1.0"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #72  create course unit: weight 0
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD2","name":"X","curricularYear":1,"semester":1,"competencyWeights":{"PROGRAMMING":0}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "competencyWeights[PROGRAMMING]": "must be greater than 0.0"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #73  create course unit: negative weight
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD3","name":"X","curricularYear":1,"semester":1,"competencyWeights":{"PROGRAMMING":-0.5}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "competencyWeights[PROGRAMMING]": "must be greater than 0.0"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #74  create course unit: empty weights
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD4","name":"X","curricularYear":1,"semester":1,"competencyWeights":{}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "competencyWeights": "Give at least one competency weight"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #75  create course unit: weights missing
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD5","name":"X","curricularYear":1,"semester":1}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "competencyWeights": "Give at least one competency weight"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #76  create course unit: unknown competency
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD6","name":"X","curricularYear":1,"semester":1,"competencyWeights":{"JUGGLING":0.5}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:57.218Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/course-units"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #77  create course unit: invalid code
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"bad code!","name":"X","curricularYear":1,"semester":1,"competencyWeights":{"PROGRAMMING":1.0}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "code": "Code must be 1-20 letters or digits"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #78  create course unit: blank name
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD7","name":" ","curricularYear":1,"semester":1,"competencyWeights":{"PROGRAMMING":1.0}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "name": "must not be blank"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #79  create course unit: year 0
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD8","name":"X","curricularYear":0,"semester":1,"competencyWeights":{"PROGRAMMING":1.0}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "curricularYear": "must be greater than or equal to 1"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #80  create course unit: year 6
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD9","name":"X","curricularYear":6,"semester":1,"competencyWeights":{"PROGRAMMING":1.0}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "curricularYear": "must be less than or equal to 5"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #81  create course unit: semester 3
+curl -X POST 'http://localhost:8080/api/course-units' -H 'Content-Type: application/json' -d '{"code":"BAD10","name":"X","curricularYear":1,"semester":3,"competencyWeights":{"PROGRAMMING":1.0}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/course-units",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "semester": "must be less than or equal to 2"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #82  list course units (now 9)
+curl -X GET 'http://localhost:8080/api/course-units'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 2,
+        "code": "AED",
+        "name": "Algoritmos e Estruturas de Dados",
+        "curricularYear": 1,
+        "semester": 1,
+        "competencyWeights": {
+            "PROGRAMMING": 0.7,
+            "MATHEMATICS_AND_LOGIC": 0.3
+        }
+    },
+    {
+        "id": 1,
+        "code": "AM",
+        "name": "Análise Matemática",
+        "curricularYear": 1,
+        "semester": 1,
+        "competencyWeights": {
+            "MATHEMATICS_AND_LOGIC": 1.0
+        }
+    },
+    {
+        "id": 9,
+        "code": "SCR3",
+        "name": "Edge weights",
+        "curricularYear": 1,
+        "semester": 1,
+        "competencyWeights": {
+            "DESIGN_AND_UX": 1.0,
+            "COMMUNICATION": 0.01
+        }
+    },
+    {
+        "id": 3,
+        "code": "BD",
+        "name": "Bases de Dados",
+        "curricularYear": 1,
+        "semester": 2,
+        "competencyWeights": {
+            "PROGRAMMING": 0.2,
+            "DATABASES": 0.8
+        }
+    },
+    {
+        "id": 6,
+        "code": "GP",
+        "name": "Gestão de Projetos",
+        "curricularYear": 2,
+        "semester": 1,
+        "competencyWeights": {
+            "COMMUNICATION": 0.4,
+            "ORGANISATION_AND_LEADERSHIP": 0.6
+        }
+    },
+    {
+        "id": 4,
+        "code": "LAM",
+        "name": "Laboratório de Aplicações Móveis",
+        "curricularYear": 2,
+        "semester": 1,
+        "competencyWeights": {
+            "PROGRAMMING": 0.6,
+            "DESIGN_AND_UX": 0.4
+        }
+    },
+    {
+        "id": 5,
+        "code": "QS",
+        "name": "Qualidade de Software",
+        "curricularYear": 2,
+        "semester": 1,
+        "competencyWeights": {
+            "PROGRAMMING": 0.5,
+            "COMMUNICATION": 0.2,
+            "ORGANISATION_AND_LEADERSHIP": 0.3
+        }
+    },
+    {
+        "id": 8,
+        "code": "SCR2",
+        "name": "Script Unit Two",
+        "curricularYear": 2,
+        "semester": 2,
+        "competencyWeights": {
+            "DATABASES": 1.0
+        }
+    },
+    {
+        "id": 7,
+        "code": "SCR1",
+        "name": "Script Unit One",
+        "curricularYear": 3,
+        "semester": 1,
+        "competencyWeights": {
+            "PROGRAMMING": 0.7,
+            "MATHEMATICS_AND_LOGIC": 0.3
+        }
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #83  get course unit
+curl -X GET 'http://localhost:8080/api/course-units/7'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "id": 7,
+    "code": "SCR1",
+    "name": "Script Unit One",
+    "curricularYear": 3,
+    "semester": 1,
+    "competencyWeights": {
+        "PROGRAMMING": 0.7,
+        "MATHEMATICS_AND_LOGIC": 0.3
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #84  get unknown course unit
+curl -X GET 'http://localhost:8080/api/course-units/999999'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Course unit 999999 not found",
+    "instance": "/api/course-units/999999",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #85  get course unit: non-numeric id
+curl -X GET 'http://localhost:8080/api/course-units/abc'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:57.522Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/course-units/abc"
+}
+
+
+
+################################################################################
+# PROFILE before any data  GET /api/students/{id}/profile
+################################################################################
+--------------------------------------------------------------------------------
+[PASS] #86  profile: student without data (all unknown, alpha 1.0)
+curl -X GET 'http://localhost:8080/api/students/16/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 16,
+    "scores": {},
+    "unknownCompetencies": [
+        "PROGRAMMING",
+        "MATHEMATICS_AND_LOGIC",
+        "DATABASES",
+        "DESIGN_AND_UX",
+        "COMMUNICATION",
+        "ORGANISATION_AND_LEADERSHIP"
+    ],
+    "questionnaireWeight": 1.0,
+    "academicWeight": 0.0,
+    "completedCourseUnits": 0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #87  profile: Carla (history, AED counts once with 16, alpha 0.7)
+curl -X GET 'http://localhost:8080/api/students/3/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 3,
+    "scores": {
+        "PROGRAMMING": 59.33,
+        "MATHEMATICS_AND_LOGIC": 56.69,
+        "DATABASES": 60.5,
+        "DESIGN_AND_UX": 50.0,
+        "COMMUNICATION": 50.0,
+        "ORGANISATION_AND_LEADERSHIP": 50.0
+    },
+    "unknownCompetencies": [],
+    "questionnaireWeight": 0.7,
+    "academicWeight": 0.3,
+    "completedCourseUnits": 3
+}
+
+--------------------------------------------------------------------------------
+[PASS] #88  profile: Diogo (cold start, alpha 1.0)
+curl -X GET 'http://localhost:8080/api/students/4/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 4,
+    "scores": {
+        "PROGRAMMING": 75.0,
+        "MATHEMATICS_AND_LOGIC": 25.0,
+        "DATABASES": 50.0,
+        "DESIGN_AND_UX": 100.0,
+        "COMMUNICATION": 75.0,
+        "ORGANISATION_AND_LEADERSHIP": 50.0
+    },
+    "unknownCompetencies": [],
+    "questionnaireWeight": 1.0,
+    "academicWeight": 0.0,
+    "completedCourseUnits": 0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #89  profile: unknown student
+curl -X GET 'http://localhost:8080/api/students/999999/profile'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 999999 not found",
+    "instance": "/api/students/999999/profile",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #90  profile: id of a teacher
+curl -X GET 'http://localhost:8080/api/students/1/profile'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 1 not found",
+    "instance": "/api/students/1/profile",
+    "status": 404,
+    "title": "Not found"
+}
+
+
+
+################################################################################
+# ENROLLMENTS (2.2)  /api/students/{id}/enrollments
+################################################################################
+--------------------------------------------------------------------------------
+[PASS] #91  list enrollments: none yet
+curl -X GET 'http://localhost:8080/api/students/15/enrollments'
+expected HTTP 200, got HTTP 200
+response:
+[]
+
+--------------------------------------------------------------------------------
+[PASS] #92  add enrollment: AED attempt 1 (failed)
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"AED","academicYear":2024,"attempt":1,"grade":8}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/students/15/enrollments/5
+response:
+{
+    "id": 5,
+    "courseUnitCode": "AED",
+    "courseUnitName": "Algoritmos e Estruturas de Dados",
+    "academicYear": 2024,
+    "academicYearLabel": "2024/25",
+    "attempt": 1,
+    "grade": 8.0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #93  add enrollment: AED attempt 2 (repeated unit)
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"AED","academicYear":2025,"attempt":2,"grade":16}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/students/15/enrollments/6
+response:
+{
+    "id": 6,
+    "courseUnitCode": "AED",
+    "courseUnitName": "Algoritmos e Estruturas de Dados",
+    "academicYear": 2025,
+    "academicYearLabel": "2025/26",
+    "attempt": 2,
+    "grade": 16.0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #94  add enrollment: lower-case code, decimal grade
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"bd","academicYear":2024,"attempt":1,"grade":14.5}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/students/15/enrollments/7
+response:
+{
+    "id": 7,
+    "courseUnitCode": "BD",
+    "courseUnitName": "Bases de Dados",
+    "academicYear": 2024,
+    "academicYearLabel": "2024/25",
+    "attempt": 1,
+    "grade": 14.5
+}
+
+--------------------------------------------------------------------------------
+[PASS] #95  add enrollment: boundary grade 0
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"AM","academicYear":2024,"attempt":1,"grade":0}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/students/15/enrollments/8
+response:
+{
+    "id": 8,
+    "courseUnitCode": "AM",
+    "courseUnitName": "Análise Matemática",
+    "academicYear": 2024,
+    "academicYearLabel": "2024/25",
+    "attempt": 1,
+    "grade": 0.0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #96  add enrollment: boundary grade 20
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"GP","academicYear":2025,"attempt":1,"grade":20}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/students/15/enrollments/9
+response:
+{
+    "id": 9,
+    "courseUnitCode": "GP",
+    "courseUnitName": "Gestão de Projetos",
+    "academicYear": 2025,
+    "academicYearLabel": "2025/26",
+    "attempt": 1,
+    "grade": 20.0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #97  add enrollment: same attempt twice
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"AED","academicYear":2025,"attempt":2,"grade":10}'
+expected HTTP 409, got HTTP 409
+response:
+{
+    "detail": "Student 15 already has attempt 2 of AED",
+    "instance": "/api/students/15/enrollments",
+    "status": 409,
+    "title": "Already exists"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #98  add enrollment: unknown course unit
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"NOPE","academicYear":2025,"attempt":1,"grade":10}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Course unit NOPE not found",
+    "instance": "/api/students/15/enrollments",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #99  add enrollment: grade above 20
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"QS","academicYear":2025,"attempt":1,"grade":21}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "grade": "must be less than or equal to 20"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #100  add enrollment: negative grade
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"QS","academicYear":2025,"attempt":1,"grade":-1}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "grade": "must be greater than or equal to 0"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #101  add enrollment: three decimals
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"QS","academicYear":2025,"attempt":1,"grade":15.555}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "grade": "numeric value out of bounds (<2 digits>.<2 digits> expected)"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #102  add enrollment: attempt 0
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"QS","academicYear":2025,"attempt":0,"grade":10}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "attempt": "must be greater than or equal to 1"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #103  add enrollment: academic year 1999
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"QS","academicYear":1999,"attempt":1,"grade":10}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "academicYear": "must be greater than or equal to 2000"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #104  add enrollment: missing grade
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"QS","academicYear":2025,"attempt":1}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "grade": "must not be null"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #105  add enrollment: blank course unit
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":" ","academicYear":2025,"attempt":1,"grade":10}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "courseUnitCode": "must not be blank"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #106  add enrollment: unknown student
+curl -X POST 'http://localhost:8080/api/students/999999/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"AED","academicYear":2025,"attempt":1,"grade":10}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 999999 not found",
+    "instance": "/api/students/999999/enrollments",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #107  add enrollment: id of a teacher
+curl -X POST 'http://localhost:8080/api/students/1/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"AED","academicYear":2025,"attempt":1,"grade":10}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 1 not found",
+    "instance": "/api/students/1/enrollments",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #108  list enrollments (5, ordered by year/code/attempt)
+curl -X GET 'http://localhost:8080/api/students/15/enrollments'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 5,
+        "courseUnitCode": "AED",
+        "courseUnitName": "Algoritmos e Estruturas de Dados",
+        "academicYear": 2024,
+        "academicYearLabel": "2024/25",
+        "attempt": 1,
+        "grade": 8.0
+    },
+    {
+        "id": 8,
+        "courseUnitCode": "AM",
+        "courseUnitName": "Análise Matemática",
+        "academicYear": 2024,
+        "academicYearLabel": "2024/25",
+        "attempt": 1,
+        "grade": 0.0
+    },
+    {
+        "id": 7,
+        "courseUnitCode": "BD",
+        "courseUnitName": "Bases de Dados",
+        "academicYear": 2024,
+        "academicYearLabel": "2024/25",
+        "attempt": 1,
+        "grade": 14.5
+    },
+    {
+        "id": 6,
+        "courseUnitCode": "AED",
+        "courseUnitName": "Algoritmos e Estruturas de Dados",
+        "academicYear": 2025,
+        "academicYearLabel": "2025/26",
+        "attempt": 2,
+        "grade": 16.0
+    },
+    {
+        "id": 9,
+        "courseUnitCode": "GP",
+        "courseUnitName": "Gestão de Projetos",
+        "academicYear": 2025,
+        "academicYearLabel": "2025/26",
+        "attempt": 1,
+        "grade": 20.0
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #109  list enrollments: unknown student
+curl -X GET 'http://localhost:8080/api/students/999999/enrollments'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 999999 not found",
+    "instance": "/api/students/999999/enrollments",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #110  list enrollments: id of a teacher
+curl -X GET 'http://localhost:8080/api/students/1/enrollments'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 1 not found",
+    "instance": "/api/students/1/enrollments",
+    "status": 404,
+    "title": "Not found"
+}
+
+
+
+################################################################################
+# QUESTIONNAIRE (2.2)  /api/students/{id}/questionnaire
+################################################################################
+--------------------------------------------------------------------------------
+[PASS] #111  get questionnaire: none yet
+curl -X GET 'http://localhost:8080/api/students/15/questionnaire'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "answers": {}
+}
+
+--------------------------------------------------------------------------------
+[PASS] #112  put questionnaire: all six answers
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"PROGRAMMING":3,"MATHEMATICS_AND_LOGIC":4,"DATABASES":2,"DESIGN_AND_UX":5,"COMMUNICATION":1,"ORGANISATION_AND_LEADERSHIP":3}}'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "answers": {
+        "PROGRAMMING": 3,
+        "MATHEMATICS_AND_LOGIC": 4,
+        "DATABASES": 2,
+        "DESIGN_AND_UX": 5,
+        "COMMUNICATION": 1,
+        "ORGANISATION_AND_LEADERSHIP": 3
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #113  get questionnaire
+curl -X GET 'http://localhost:8080/api/students/15/questionnaire'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "answers": {
+        "PROGRAMMING": 3,
+        "MATHEMATICS_AND_LOGIC": 4,
+        "DATABASES": 2,
+        "DESIGN_AND_UX": 5,
+        "COMMUNICATION": 1,
+        "ORGANISATION_AND_LEADERSHIP": 3
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #114  put questionnaire: replaces, only two answers left
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"PROGRAMMING":3,"COMMUNICATION":5}}'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "answers": {
+        "PROGRAMMING": 3,
+        "COMMUNICATION": 5
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #115  get questionnaire after replace
+curl -X GET 'http://localhost:8080/api/students/15/questionnaire'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "answers": {
+        "PROGRAMMING": 3,
+        "COMMUNICATION": 5
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #116  put questionnaire: answer 6
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"PROGRAMMING":6}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/questionnaire",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "answers[PROGRAMMING]": "must be less than or equal to 5"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #117  put questionnaire: answer 0
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"PROGRAMMING":0}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/questionnaire",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "answers[PROGRAMMING]": "must be greater than or equal to 1"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #118  put questionnaire: answer not a number
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"PROGRAMMING":"high"}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:58.779Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/students/15/questionnaire"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #119  put questionnaire: null answer
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"PROGRAMMING":null}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/questionnaire",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "answers[PROGRAMMING]": "must not be null"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #120  put questionnaire: empty answers
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/questionnaire",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "answers": "Give at least one answer"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #121  put questionnaire: answers missing
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/questionnaire",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "answers": "Give at least one answer"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #122  put questionnaire: unknown competency
+curl -X PUT 'http://localhost:8080/api/students/15/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"JUGGLING":3}}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:58.912Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/students/15/questionnaire"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #123  get questionnaire (unchanged by the rejected requests)
+curl -X GET 'http://localhost:8080/api/students/15/questionnaire'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "answers": {
+        "PROGRAMMING": 3,
+        "COMMUNICATION": 5
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #124  put questionnaire: unknown student
+curl -X PUT 'http://localhost:8080/api/students/999999/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"PROGRAMMING":3}}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 999999 not found",
+    "instance": "/api/students/999999/questionnaire",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #125  get questionnaire: unknown student
+curl -X GET 'http://localhost:8080/api/students/999999/questionnaire'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 999999 not found",
+    "instance": "/api/students/999999/questionnaire",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #126  put questionnaire: id of a teacher
+curl -X PUT 'http://localhost:8080/api/students/1/questionnaire' -H 'Content-Type: application/json' -d '{"answers":{"PROGRAMMING":3}}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 1 not found",
+    "instance": "/api/students/1/questionnaire",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #127  get questionnaire: id of a teacher
+curl -X GET 'http://localhost:8080/api/students/1/questionnaire'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Student 1 not found",
+    "instance": "/api/students/1/questionnaire",
+    "status": 404,
+    "title": "Not found"
+}
+
+
+
+################################################################################
+# PROFILE with data, then changing and deleting grades
+################################################################################
+--------------------------------------------------------------------------------
+[PASS] #128  profile: questionnaire + 4 course units (AED counts as 16)
+curl -X GET 'http://localhost:8080/api/students/15/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 15,
+    "scores": {
+        "PROGRAMMING": 61.33,
+        "MATHEMATICS_AND_LOGIC": 18.46,
+        "DATABASES": 72.5,
+        "COMMUNICATION": 100.0,
+        "ORGANISATION_AND_LEADERSHIP": 100.0
+    },
+    "unknownCompetencies": [
+        "DESIGN_AND_UX"
+    ],
+    "questionnaireWeight": 0.6,
+    "academicWeight": 0.4,
+    "completedCourseUnits": 4
+}
+
+--------------------------------------------------------------------------------
+[PASS] #129  update grade: AED attempt 2 from 16 to 17.5
+curl -X PUT 'http://localhost:8080/api/students/15/enrollments/6' -H 'Content-Type: application/json' -d '{"grade":17.5}'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "id": 6,
+    "courseUnitCode": "AED",
+    "courseUnitName": "Algoritmos e Estruturas de Dados",
+    "academicYear": 2025,
+    "academicYearLabel": "2025/26",
+    "attempt": 2,
+    "grade": 17.5
+}
+
+--------------------------------------------------------------------------------
+[PASS] #130  profile after the grade change
+curl -X GET 'http://localhost:8080/api/students/15/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 15,
+    "scores": {
+        "PROGRAMMING": 63.67,
+        "MATHEMATICS_AND_LOGIC": 20.19,
+        "DATABASES": 72.5,
+        "COMMUNICATION": 100.0,
+        "ORGANISATION_AND_LEADERSHIP": 100.0
+    },
+    "unknownCompetencies": [
+        "DESIGN_AND_UX"
+    ],
+    "questionnaireWeight": 0.6,
+    "academicWeight": 0.4,
+    "completedCourseUnits": 4
+}
+
+--------------------------------------------------------------------------------
+[PASS] #131  update grade: 25 rejected
+curl -X PUT 'http://localhost:8080/api/students/15/enrollments/6' -H 'Content-Type: application/json' -d '{"grade":25}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments/6",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "grade": "must be less than or equal to 20"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #132  update grade: negative rejected
+curl -X PUT 'http://localhost:8080/api/students/15/enrollments/6' -H 'Content-Type: application/json' -d '{"grade":-1}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments/6",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "grade": "must be greater than or equal to 0"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #133  update grade: missing grade
+curl -X PUT 'http://localhost:8080/api/students/15/enrollments/6' -H 'Content-Type: application/json' -d '{}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "detail": "One or more fields are invalid",
+    "instance": "/api/students/15/enrollments/6",
+    "status": 400,
+    "title": "Validation failed",
+    "fieldErrors": {
+        "grade": "must not be null"
+    }
+}
+
+--------------------------------------------------------------------------------
+[PASS] #134  update grade: boundary 0
+curl -X PUT 'http://localhost:8080/api/students/15/enrollments/7' -H 'Content-Type: application/json' -d '{"grade":0}'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "id": 7,
+    "courseUnitCode": "BD",
+    "courseUnitName": "Bases de Dados",
+    "academicYear": 2024,
+    "academicYearLabel": "2024/25",
+    "attempt": 1,
+    "grade": 0.0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #135  update grade: unknown enrollment
+curl -X PUT 'http://localhost:8080/api/students/15/enrollments/999999' -H 'Content-Type: application/json' -d '{"grade":10}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Enrollment 999999 not found",
+    "instance": "/api/students/15/enrollments/999999",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #136  update grade: enrollment 1 belongs to Carla, not to this student
+curl -X PUT 'http://localhost:8080/api/students/15/enrollments/1' -H 'Content-Type: application/json' -d '{"grade":10}'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Enrollment 1 not found",
+    "instance": "/api/students/15/enrollments/1",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #137  update grade: non-numeric id
+curl -X PUT 'http://localhost:8080/api/students/15/enrollments/abc' -H 'Content-Type: application/json' -d '{"grade":10}'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:59.443Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/students/15/enrollments/abc"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #138  delete enrollment: AED attempt 2 (attempt 1 becomes the latest)
+curl -X DELETE 'http://localhost:8080/api/students/15/enrollments/6'
+expected HTTP 204, got HTTP 204
+response:
+(empty body)
+--------------------------------------------------------------------------------
+[PASS] #139  profile after the delete (AED is 8 again)
+curl -X GET 'http://localhost:8080/api/students/15/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 15,
+    "scores": {
+        "PROGRAMMING": 42.44,
+        "MATHEMATICS_AND_LOGIC": 9.23,
+        "DATABASES": 0.0,
+        "COMMUNICATION": 100.0,
+        "ORGANISATION_AND_LEADERSHIP": 100.0
+    },
+    "unknownCompetencies": [
+        "DESIGN_AND_UX"
+    ],
+    "questionnaireWeight": 0.6,
+    "academicWeight": 0.4,
+    "completedCourseUnits": 4
+}
+
+--------------------------------------------------------------------------------
+[PASS] #140  delete the same enrollment again
+curl -X DELETE 'http://localhost:8080/api/students/15/enrollments/6'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Enrollment 6 not found",
+    "instance": "/api/students/15/enrollments/6",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #141  delete enrollment of another student
+curl -X DELETE 'http://localhost:8080/api/students/15/enrollments/1'
+expected HTTP 404, got HTTP 404
+response:
+{
+    "detail": "Enrollment 1 not found",
+    "instance": "/api/students/15/enrollments/1",
+    "status": 404,
+    "title": "Not found"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #142  delete: non-numeric id
+curl -X DELETE 'http://localhost:8080/api/students/15/enrollments/abc'
+expected HTTP 400, got HTTP 400
+response:
+{
+    "timestamp": "2026-10-19T11:12:59.595Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/students/15/enrollments/abc"
+}
+
+--------------------------------------------------------------------------------
+[PASS] #143  list enrollments after deletes
+curl -X GET 'http://localhost:8080/api/students/15/enrollments'
+expected HTTP 200, got HTTP 200
+response:
+[
+    {
+        "id": 5,
+        "courseUnitCode": "AED",
+        "courseUnitName": "Algoritmos e Estruturas de Dados",
+        "academicYear": 2024,
+        "academicYearLabel": "2024/25",
+        "attempt": 1,
+        "grade": 8.0
+    },
+    {
+        "id": 8,
+        "courseUnitCode": "AM",
+        "courseUnitName": "Análise Matemática",
+        "academicYear": 2024,
+        "academicYearLabel": "2024/25",
+        "attempt": 1,
+        "grade": 0.0
+    },
+    {
+        "id": 7,
+        "courseUnitCode": "BD",
+        "courseUnitName": "Bases de Dados",
+        "academicYear": 2024,
+        "academicYearLabel": "2024/25",
+        "attempt": 1,
+        "grade": 0.0
+    },
+    {
+        "id": 9,
+        "courseUnitCode": "GP",
+        "courseUnitName": "Gestão de Projetos",
+        "academicYear": 2025,
+        "academicYearLabel": "2025/26",
+        "attempt": 1,
+        "grade": 20.0
+    }
+]
+
+--------------------------------------------------------------------------------
+[PASS] #144  re-add the deleted attempt (allowed again)
+curl -X POST 'http://localhost:8080/api/students/15/enrollments' -H 'Content-Type: application/json' -d '{"courseUnitCode":"AED","academicYear":2025,"attempt":2,"grade":12}'
+expected HTTP 201, got HTTP 201
+Location: http://localhost:8080/api/students/15/enrollments/10
+response:
+{
+    "id": 10,
+    "courseUnitCode": "AED",
+    "courseUnitName": "Algoritmos e Estruturas de Dados",
+    "academicYear": 2025,
+    "academicYearLabel": "2025/26",
+    "attempt": 2,
+    "grade": 12.0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #145  Carla's profile is unaffected
+curl -X GET 'http://localhost:8080/api/students/3/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 3,
+    "scores": {
+        "PROGRAMMING": 59.33,
+        "MATHEMATICS_AND_LOGIC": 56.69,
+        "DATABASES": 60.5,
+        "DESIGN_AND_UX": 50.0,
+        "COMMUNICATION": 50.0,
+        "ORGANISATION_AND_LEADERSHIP": 50.0
+    },
+    "unknownCompetencies": [],
+    "questionnaireWeight": 0.7,
+    "academicWeight": 0.3,
+    "completedCourseUnits": 3
+}
+
+--------------------------------------------------------------------------------
+[PASS] #146  Diogo's profile is unaffected
+curl -X GET 'http://localhost:8080/api/students/4/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 4,
+    "scores": {
+        "PROGRAMMING": 75.0,
+        "MATHEMATICS_AND_LOGIC": 25.0,
+        "DATABASES": 50.0,
+        "DESIGN_AND_UX": 100.0,
+        "COMMUNICATION": 75.0,
+        "ORGANISATION_AND_LEADERSHIP": 50.0
+    },
+    "unknownCompetencies": [],
+    "questionnaireWeight": 1.0,
+    "academicWeight": 0.0,
+    "completedCourseUnits": 0
+}
+
+--------------------------------------------------------------------------------
+[PASS] #147  Eva (no data) profile
+curl -X GET 'http://localhost:8080/api/students/5/profile'
+expected HTTP 200, got HTTP 200
+response:
+{
+    "studentId": 5,
+    "scores": {},
+    "unknownCompetencies": [
+        "PROGRAMMING",
+        "MATHEMATICS_AND_LOGIC",
+        "DATABASES",
+        "DESIGN_AND_UX",
+        "COMMUNICATION",
+        "ORGANISATION_AND_LEADERSHIP"
+    ],
+    "questionnaireWeight": 1.0,
+    "academicWeight": 0.0,
+    "completedCourseUnits": 0
+}
+
+
+
+################################################################################
+# SUMMARY: 147 calls, 147 PASS, 0 FAIL
+################################################################################
