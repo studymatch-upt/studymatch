@@ -12,7 +12,7 @@ export default function QuestionnaireComplete() {
   return <StudentPage title="Questionário concluído" subtitle="As 18 respostas foram guardadas neste dispositivo." detail>
       <AppCard style={studentStyles.stack}>
         <AppText variant="heading">A tua autoavaliação está pronta</AppText>
-        <AppText tone="secondary">Podes rever as respostas e explorar as seis áreas de competências. O radar visual e o cálculo com o percurso académico serão adicionados numa próxima etapa.</AppText>
+        <AppText tone="secondary">Explora agora o teu radar e as seis áreas de competências. Podes rever ou refazer as respostas quando quiseres.</AppText>
         <AppText variant="caption" tone="secondary">Resultado local de demonstração, sem validação académica ou ligação ao servidor.</AppText>
       </AppCard>
       <AppButton title="Explorar o meu perfil" onPress={() => router.replace('/student/competencies')} />
