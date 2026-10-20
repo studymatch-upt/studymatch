@@ -5,6 +5,8 @@ import { AppText } from '@/components/AppText';
 import { BrandMark } from '@/components/BrandMark';
 import { CalendarCard } from '@/features/student/CalendarCard';
 import { CompetencyRadar } from '@/features/student/CompetencyRadar';
+import { selectCompetencyProfile } from '@/features/student/competencyProfile';
+import { useDemoSession } from '@/features/student/DemoSession';
 import { demoStudent } from '@/features/student/data';
 import { StudentIcon, type StudentIconName } from '@/features/student/StudentIcon';
 import { StudentPage, studentStyles } from '@/features/student/StudentPage';
@@ -20,25 +22,27 @@ const activity: { title: string; icon: StudentIconName; path: '/student/groups' 
 export default function StudentHome() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { record, identity } = useDemoSession();
+  const profile = selectCompetencyProfile(record);
   return (
-    <StudentPage compactHeader title={`Olá, ${demoStudent.firstName}!`} subtitle={demoStudent.course} headerAccessory={<View accessibilityLabel="StudyMatch"><BrandMark size={dimensions.symbol} /></View>}>
+    <StudentPage compactHeader title={identity?.name ? `Olá, ${identity.name.split(' ')[0]}!` : 'Olá!'} subtitle={`${demoStudent.course} · exemplo`} headerAccessory={<View accessibilityLabel="StudyMatch"><BrandMark size={dimensions.symbol} /></View>}>
       <Pressable accessibilityRole="button" accessibilityLabel="Ver perfil de competências" onPress={() => router.push('/student/competencies')} style={({ pressed }) => pressed && styles.pressed}>
         <AppCard style={styles.overall}>
           <View style={studentStyles.spread}>
             <View style={studentStyles.copy}>
-              <AppText variant="label">Overall</AppText>
+              <AppText variant="label">Overall · {profile?.overallScore == null ? '—' : Math.round(profile.overallScore)}</AppText>
               <AppText variant="caption" tone="secondary">Perfil de competências</AppText>
             </View>
             <AppText variant="caption" tone="accent">Ver perfil ↗</AppText>
           </View>
           <View style={styles.radarRow}>
             <View style={[styles.radarBox, { backgroundColor: colors.surfaceRaised }]}>
-              <CompetencyRadar size={82} />
+              <CompetencyRadar size={82} scores={profile?.scores} />
             </View>
             <View style={[studentStyles.copy, studentStyles.flex]}>
-              <AppText variant="label">{demoStudent.name}</AppText>
-              <AppText variant="caption" tone="secondary">Ainda sem pontuações</AppText>
-              <AppText variant="caption" tone="secondary">As seis áreas vão aparecer aqui após a avaliação.</AppText>
+              <AppText variant="label" numberOfLines={1}>{identity?.name || `${demoStudent.name} · exemplo`}</AppText>
+              <AppText variant="caption" tone="secondary">{profile?.source === 'official' ? 'Perfil académico' : 'Autoavaliação local'} · seis competências</AppText>
+              <AppText variant="caption" tone="secondary">Sem nota global oficial</AppText>
             </View>
           </View>
         </AppCard>
