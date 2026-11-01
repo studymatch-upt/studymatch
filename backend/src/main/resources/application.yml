@@ -8,7 +8,7 @@ spring:
     password: ${DB_PASSWORD:group_matcher}
 
   jpa:
-    # Schema is owned by Flyway; Hibernate only checks that entities match it.
+  # Tables added in Sprint 2 are created by Hibernate (update).
     hibernate:
       ddl-auto: update
     open-in-view: false
