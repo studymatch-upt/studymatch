@@ -13,33 +13,40 @@ Forming good groups by hand is slow and rarely fair. StudyMatch has to answer tw
 1. **Who is each student?** — build a profile of competencies, even for students with no history yet (**cold start**).
 2. **How do we combine students?** — use those profiles to form balanced groups for a specific activity (**matching**).
 
+Sprint 2 answers the first question. Matching is the goal of the next sprints.
+
 ## 2. Users
 
 | Role | What they do |
 |---|---|
-| **Student** | Registers, answers the onboarding questionnaire, records academic history, views their profile and their groups. |
+| **Student** | Answers the onboarding questionnaire, records academic history, views their competency profile and their groups. |
 | **Teacher** | Creates projects (grouping contexts) for their course units, sets group size and competency weights, generates and adjusts groups. |
-| **Admin** | Manages users and roles, degrees, course units, the competency catalogue and the weight of each course unit in each competency. |
+| **Admin** | Manages users and roles, course units, the competency catalogue and the weight of each course unit in each competency. |
 
 ## 3. Business logic
 
 ### 3.1 Competencies
 
-Every piece of information becomes a score from 0 to 100 in six categories (managed by the Admin, so more can be added):
+Every piece of information becomes a score from 0 to 100 in six competencies:
 
-**Programming · Mathematics and Logic · Databases · Design and UX · Communication and Writing · Organisation and Leadership**
+**Programming · Mathematics and Logic · Databases · Design and UX · Communication · Organisation and Leadership**
+
+They are defined in the `Competency` enum (backend). Making them configurable by the Admin is planned (Issue #13).
 
 ### 3.2 Cold start — the onboarding questionnaire
 
-New students have no grades. Right after registering they answer a questionnaire about **what they like and find easy**: 2 statements per competency on a 1–5 scale, plus their preferred role in a group (Leader, Developer, Designer, Tester, Writer).
+New students have no grades, so the first profile comes from a **self-assessment questionnaire** on a 1–5 scale (1 = strongly disagree, 5 = strongly agree).
+
+- The mobile app asks **18 statements, 3 per competency**, grouped in 6 steps.
+- The 3 answers of each competency are averaged and rounded, so the backend receives **one value from 1 to 5 per competency**.
 
 ```
-Q(c) = ((a₁ + a₂) / 2 − 1) / 4 × 100
+Q(c) = (answer − 1) / 4 × 100
 ```
 
 ### 3.3 Academic evidence — grades
 
-Each course unit contributes to competencies with a weight (e.g. **AED = 70% Programming + 30% Mathematics and Logic**). Only the latest attempt of each course unit counts.
+Each course unit contributes to one or more competencies with a weight in ]0, 1] (e.g. **AED = 0.7 Programming + 0.3 Mathematics and Logic**). When a course unit is repeated, only the **latest attempt** counts.
 
 ```
 G(c) = Σ (grade / 20 × 100 × weight) / Σ weight
@@ -47,39 +54,40 @@ G(c) = Σ (grade / 20 × 100 × weight) / Σ weight
 
 ### 3.4 The dynamic profile
 
-The questionnaire matters most at the start and gives way to real evidence as the student completes course units — but never disappears, because soft skills are poorly captured by grades.
+The questionnaire matters most at the start and gives way to real evidence as the student is evaluated in more course units — but never disappears, because soft skills are poorly captured by grades.
 
 ```
-Score(c) = α × Q(c) + (1 − α) × G(c)          α = max(0.2, 1 − 0.1 × completed course units)
+Score(c) = α × Q(c) + (1 − α) × G(c)          α = max(0.2, 1 − 0.1 × evaluated course units)
 ```
 
-| Completed course units | 0 | 2 | 4 | 6 | 8+ |
+| Evaluated course units | 0 | 2 | 4 | 6 | 8+ |
 |---|---|---|---|---|---|
 | Questionnaire weight (α) | 100% | 80% | 60% | 40% | 20% |
 
-The profile is recalculated whenever the questionnaire is submitted or a grade is recorded.
+- **Evaluated course units** are the course units with a grade (latest attempt), **passed or failed**: a failed grade is also evidence.
+- When only one source exists for a competency, that source is used alone; with neither, the competency is **unknown** (not shown as 0).
+- The profile is **not stored**: it is recalculated on every request, so a new grade updates it immediately.
 
-### 3.5 Matching — forming balanced groups
+Details and a worked example: [docs/sprint2-design-decisions.md](docs/sprint2-design-decisions.md).
+
+### 3.5 Matching — forming balanced groups (planned)
 
 The teacher creates a **project** with a group size and the **weight of each competency** for that activity (e.g. a database project: 50% Databases, 30% Programming, 20% Communication).
 
 1. **Weighted score** for each student: `S = Σ weight(c) × Score(c)`.
 2. **Snake distribution:** students sorted by S are dealt 1-2-3, 3-2-1, 1-2-3… so strong and weaker students are spread evenly.
 3. **Coverage:** every group should have someone strong (≥ 60) in each important competency (weight ≥ 25%); otherwise students with similar S are swapped between groups.
-4. **Constraints, availability and roles:** swaps also respect "must not be together" rules, keep students with compatible availability together and avoid groups without a leader.
-5. **Teacher review:** the teacher sees the proposal, adjusts it and publishes it.
+4. **Teacher review:** the teacher sees the proposal, adjusts it and publishes it.
 
-The group size is a **maximum** and sizes differ by at most one (10 students, size 3 → 3/3/2/2).
+The group size is a **maximum** and sizes differ by at most one (10 students, size 3 → 3/3/2/2). Sprint 1 already forms groups with balanced sizes (round-robin), the base for the snake distribution.
 
 ### 3.6 Additional features
 
-- **AI weight recommendation** — the teacher describes the activity and gets suggested competency weights (always confirmed by the teacher; no personal data is sent).
-- **Match explanation** — "Why this group?": each student sees what they bring to the group.
-- **Availability** — students indicate the time slots when they are available (especially working students), so groups are formed with compatible schedules.
-- **Peer evaluation** — at the end of each project, students anonymously rate each colleague's participation, communication and contribution; the result feeds the profile.
-- **Visual competency profile** — a dashboard with a radar chart of the six competencies and their evolution throughout the degree.
-
-Full details: [use cases](docs/use-cases.md) · [cold start and matching](docs/cold-start-and-matching.md).
+- **Visual competency profile** *(done in Sprint 2)* — radar chart and bars of the six competencies.
+- **Profile origin indicator** *(done in Sprint 2, team-defined feature)* — shows how much of the profile comes from the questionnaire and how much from grades (α and 1 − α).
+- **Match explanation** *(planned)* — "Why this group?": each student sees what they bring to the group.
+- **AI weight recommendation** *(planned)* — the teacher describes the activity and gets suggested competency weights, always confirmed by the teacher.
+- **Availability and peer evaluation** *(planned)*.
 
 ---
 
@@ -87,30 +95,39 @@ Full details: [use cases](docs/use-cases.md) · [cold start and matching](docs/c
 
 | Layer | Technology |
 |---|---|
-| Frontend | **React Native + Expo** (TypeScript) — Android, iOS and web |
-| Backend | Java 21 + Spring Boot 4 (REST API, Spring Data JPA, Validation) |
-| Database | MySQL 8.4 + Flyway migrations |
-| Build | Maven (backend), npm (frontend) |
-| Tests and quality | JUnit 5, Mockito, Spring Boot Test, H2, JaCoCo · Jest/Vitest, Testing Library, oxlint |
+| Mobile app | **React Native + Expo** (TypeScript), Expo Router |
+| Web prototype (Sprint 1) | React + Vite (`frontend/`) |
+| Backend | Java 21 + Spring Boot 4 (REST API, Spring Data JPA, Bean Validation) |
+| Database | MySQL 8.4 (Docker Compose) · Flyway for the Sprint 1 schema and demo users |
+| Build | Maven with Maven Wrapper (`mvnw`), npm |
+| Tests and quality | JUnit 5, AssertJ, Mockito, Spring Boot Test (MockMvc), H2 in MySQL mode, JaCoCo · Node test runner, TypeScript, ESLint |
 
-Justification: [docs/tech-stack.md](docs/tech-stack.md).
+Why these choices:
 
-## 5. Current status (Sprint 1)
+- **Java + Spring Boot** — Java is required by the course; Spring Boot gives REST, persistence and validation out of the box, and a layered structure that is easy to test.
+- **Expo** — students use the app mostly on their phone; one code base for Android and iOS, tested on a real device with Expo Go / a development build.
+- **MySQL** — the domain is relational (students, course units, enrollments, answers); the team already knows it.
+- **Maven Wrapper** — everyone builds with the same Maven version (`./mvnw`), without installing Maven.
+- **Business logic in plain Java** (`ProfileCalculator`, `GroupFormationStrategy`) — unit-tested without database or web layer.
 
-Working end-to-end flow: a teacher creates a project, picks the students and the maximum group size, and the groups are formed and stored automatically (no matching criteria yet — the balanced round-robin strategy is the base for the snake distribution above).
+## 5. Current status (Sprint 2)
 
 | Done | Next |
 |---|---|
-| Users with roles, projects, groups | Admin role and management screens |
-| `POST/GET /api/projects`, `GET /api/users` | Login (Spring Security) |
-| Group formation with balanced sizes | Questionnaire, competency profile, weighted matching |
-| Unit + integration tests, coverage report | Frontend in Expo (current prototype is React + Vite) |
+| Student information: create, list (search, filter, sort), view, update | Delete student |
+| Academic history: course units with competency weights, grades with repeated attempts | Average of all attempts (teacher's suggestion, 19 Oct) |
+| Cold-start questionnaire (18 statements in the app, 6 values in the API) | Send the app questionnaire to the API (today it stays on the device) |
+| Competency profile (`ProfileCalculator`) and `GET /api/students/{id}/profile` | Configurable parameters and questionnaire in the database (#13) |
+| Mobile app: demo students (Carla, Diogo), profile radar and bars, origin indicator, add grade | Login and roles (Spring Security) |
+| 114 backend tests + 15 mobile tests, all passing | Remove Flyway: Hibernate creates the whole schema, demo users move to the seeder · weighted matching |
+
+Demo data (loaded on startup): six course units (AM, AED, BD, LAM, QS, GP) and two demo students — **Carla Mendes** (questionnaire + grades, scenario A) and **Diogo Ferreira** (questionnaire only, cold start, scenario B).
 
 ---
 
 ## 6. Run it locally
 
-Requirements: JDK 21+, Maven 3.9+, Node 20+, Docker (or your own MySQL 8).
+Requirements: JDK 21+, Node 22.13+, Docker (or your own MySQL 8). Maven is not needed (Maven Wrapper).
 
 ```bash
 # 1. Database
@@ -118,24 +135,26 @@ docker compose up -d
 
 # 2. Backend  -> http://localhost:8080
 cd backend
-mvn spring-boot:run
+./mvnw spring-boot:run          # Windows: .\mvnw.cmd spring-boot:run
 
-# 3. Frontend -> http://localhost:5173  (proxies /api to :8080)
-cd frontend
-npm install
-npm run dev
+# 3. Mobile app
+cd mobile
+npm ci
+npm start
 ```
 
-On first start Flyway creates the schema and seeds two teachers and twelve students (`backend/src/main/resources/db/seed`). Database connection can be overridden with `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
+To use the app on a phone with the real backend, set `EXPO_PUBLIC_STUDYMATCH_API_URL` to the laptop address on the same network (e.g. `http://192.168.1.20:8080`, **not** `localhost`). See [mobile/README.md](mobile/README.md).
+
+On first start, Flyway creates the Sprint 1 schema and seeds two teachers and twelve students; Hibernate creates the Sprint 2 tables; the demo seeder adds the course units and the data of Carla and Diogo. The connection can be overridden with `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
 
 ## 7. Tests and quality checks
 
 | Command | Where | What |
 |---|---|---|
-| `mvn verify` | backend | Unit + integration tests (H2 in MySQL mode, same Flyway migrations), JaCoCo report in `target/site/jacoco/index.html` |
-| `npm test` | frontend | Vitest + Testing Library |
-| `npm run lint` | frontend | oxlint |
-| `npm run build` | frontend | Type-check + production build |
+| `./mvnw clean test` | backend | 114 tests: unit (business logic, services) + integration (REST API with MockMvc on H2) |
+| `./mvnw verify` | backend | Tests + JaCoCo coverage report in `target/site/jacoco/index.html` |
+| `node --experimental-strip-types --test src/features/student/*.test.mjs` | mobile | 15 tests: questionnaire, profile, grades, API client |
+| `npm run typecheck` · `npm run lint` | mobile | TypeScript and ESLint |
 
 ## 8. Code structure
 
@@ -143,17 +162,19 @@ On first start Flyway creates the schema and seeds two teachers and twelve stude
 backend/src/main/java/com/qs/groupmatcher
 ├── controller/        REST endpoints (HTTP in/out only)
 ├── service/           Use cases and business rules, transaction boundaries
+│   ├── profile/       ProfileCalculator, Competency, GradeEvidence, StudentProfile (pure Java)
 │   └── grouping/      GroupFormationStrategy: the extension point for matching criteria
 ├── repository/        Spring Data JPA
-├── model/             JPA entities: User, Project, ProjectGroup
+├── model/             JPA entities: User, CourseUnit, Enrollment, QuestionnaireAnswer, Project, ProjectGroup
 ├── dto/               Request/response records (entities never leave the service layer)
+├── seed/              Demo academic data (course units, Carla, Diogo)
 └── exception/         Domain exceptions + RFC 9457 problem-detail handler
 
-frontend/src
-├── api/               fetch wrapper (ApiError), endpoint functions, useApi hook
-├── context/           Current teacher (stand-in for login)
-├── components/        Layout
-└── pages/             Project list, create project, project detail
+mobile/src
+├── app/               Screens (Expo Router): entry, login, student tabs, questionnaire, competencies, grades
+├── features/student/  API client, questionnaire, profile selection, grades + their tests
+├── components/        Design system components
+└── theme/             Colours, tokens, light/dark theme
 ```
 
 ## 9. API
@@ -161,32 +182,42 @@ frontend/src
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/users?role=TEACHER\|STUDENT` | List users by role |
-| POST | `/api/projects` | Create project and form groups. Returns 201 + `Location` |
-| GET | `/api/projects?teacherId={id}` | Teacher's projects with group/student counts |
-| GET | `/api/projects/{id}` | Project with groups and members |
+| POST · GET | `/api/students` | Create a student · list (`search`, `curricularYear`, `sortBy`, `direction`) |
+| GET · PUT | `/api/students/{id}` | View · update a student |
+| POST · GET | `/api/course-units` | Create a course unit with competency weights · list |
+| GET | `/api/course-units/{id}` | View a course unit |
+| POST · GET | `/api/students/{id}/enrollments` | Add a grade (course unit, academic year, attempt, grade) · academic history |
+| PUT · DELETE | `/api/students/{id}/enrollments/{enrollmentId}` | Correct a grade · remove it |
+| PUT · GET | `/api/students/{id}/questionnaire` | Replace · read the questionnaire answers (1–5 per competency) |
+| GET | `/api/students/{id}/profile` | Competency profile, questionnaire and academic weights |
+| POST · GET | `/api/projects` | Create a project and form groups · teacher's projects (Sprint 1) |
+| GET | `/api/projects/{id}` | Project with groups and members (Sprint 1) |
 
-`POST /api/projects` body:
+`GET /api/students/{id}/profile` response:
 
 ```json
-{ "name": "Web App", "description": "optional", "groupSize": 3, "teacherId": 1, "studentIds": [3, 4, 5, 6, 7] }
+{
+  "studentId": 7,
+  "scores": { "PROGRAMMING": 59.33, "MATHEMATICS_AND_LOGIC": 56.69, "DATABASES": 60.5 },
+  "unknownCompetencies": [],
+  "questionnaireWeight": 0.7,
+  "academicWeight": 0.3,
+  "completedCourseUnits": 3
+}
 ```
 
-Errors are `application/problem+json`: 400 (validation, with `fieldErrors`), 404 (unknown teacher/student/project), 422 (business rule, e.g. creator is not a teacher or a selected user is not a student).
+Errors are `application/problem+json`: 400 (validation, with `fieldErrors`), 404 (unknown student, course unit or enrollment), 409 (duplicate, e.g. the same attempt twice), 422 (business rule).
 
 ## 10. Design decisions
 
-- **Matching criteria plug in via `GroupFormationStrategy`.** The questionnaire- and grade-based matching becomes a new implementation; `ProjectService` does not change. Strategies are deterministic, which keeps them testable.
-- **Project and groups are created in one transaction.** Either everything is saved or nothing is.
-- **Flyway owns the schema**, Hibernate only validates (`ddl-auto: validate`). Tests run the same migrations on H2.
-- **No authentication yet.** `teacherId` in the request and the "Acting as" dropdown are placeholders until Spring Security is added.
+- **The profile calculation is pure Java** (`ProfileCalculator`): no database and no web layer, so every rule is unit-tested in isolation.
+- **The profile is calculated on request, not stored** — it can never be out of date.
+- **Matching criteria plug in via `GroupFormationStrategy`.** The weighted matching becomes a new implementation; `ProjectService` does not change.
+- **Schema:** tables are created by Hibernate (`ddl-auto: update`) from the entities. Sprint 1 tables still come from Flyway; next sprint Flyway is removed and the demo users move to the Java seeder, so Hibernate becomes the only mechanism.
+- **No authentication yet** (agreed with the teacher). The app enters through a development panel with the demo students; login comes with Spring Security in a later sprint.
 
-## 11. Team workflow and documentation
+More: [docs/sprint2-design-decisions.md](docs/sprint2-design-decisions.md).
 
-Every change follows **Issue → Branch → Pull Request → Review → Merge** — see [CONTRIBUTING.md](CONTRIBUTING.md).
+## 11. Team workflow
 
-| Document | Content |
-|---|---|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Workflow, conventions, review rotation, Definition of Done |
-| [docs/tech-stack.md](docs/tech-stack.md) | Technology stack and justification |
-| [docs/use-cases.md](docs/use-cases.md) | Use-case model |
-| [docs/cold-start-and-matching.md](docs/cold-start-and-matching.md) | Cold start and matching (business logic) 
+Every change follows **Issue → Branch → Pull Request → Review → Merge** — see [CONTRIBUTING.md](CONTRIBUTING.md) for the conventions, review rotation and Definition of Done.
